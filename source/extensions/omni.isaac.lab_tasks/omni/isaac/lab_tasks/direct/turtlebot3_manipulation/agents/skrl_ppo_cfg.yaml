@@ -14,7 +14,7 @@ models:
     initial_log_std: 0.0
     network:
       - name: net
-        input: STATES
+        input: STATES["obs"]
         layers:
           - linear: [256]
           - linear: [256]
@@ -27,7 +27,7 @@ models:
     clip_actions: False
     network:
       - name: net
-        input: STATES
+        input: STATES["obs"]
         layers:
           - linear: [256]
           - linear: [256]

@@ -11,12 +11,14 @@ import inspect
 import math
 import numpy as np
 import torch
+import random
 import weakref
 from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import MISSING
 from typing import Any, ClassVar
 
+import omni.isaac.core.utils.prims as prims_utils
 import omni.isaac.core.utils.torch as torch_utils
 import omni.kit.app
 import omni.log
@@ -356,6 +358,15 @@ class DirectRLEnv(gym.Env):
             # if sensors are added to the scene, make sure we render to reflect changes in reset
             if self.sim.has_rtx_sensors() and self.cfg.rerender_on_reset:
                 self.sim.render()
+
+        # if self.common_step_counter % 50 == 0:
+        #     # 現在のライト prim を削除
+        #     if self.common_step_counter != 50:
+        #         prims_utils.delete_prim("/World/Light")
+        #     # ランダムに選択（0〜len(self.dome_light_configs)-1 のインデックスを取得）
+        #     n_dome_light_config = random.randint(0, len(self.dome_light_configs) - 1)
+        #     # 選択した設定を使ってライトを再生成
+        #     self.dome_light_configs[n_dome_light_config].func("/World/Light", self.dome_light_configs[n_dome_light_config])
 
         # post-step: step interval event
         if self.cfg.events:

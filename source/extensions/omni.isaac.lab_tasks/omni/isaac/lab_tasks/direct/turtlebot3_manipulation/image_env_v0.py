@@ -45,31 +45,31 @@ class EventCfg:
 
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
-    reset_leftcaster_friction = EventTerm(
+    randomize_leftcaster_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_left_link"),
-          "static_friction_range": (0.0, 0.0),
-          "dynamic_friction_range": (0.0, 0.0),
+          "static_friction_range": (0.1, 0.1),
+          "dynamic_friction_range": (0.1, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    reset_rightcaster_friction = EventTerm(
+    randomize_rightcaster_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_right_link"),
-          "static_friction_range": (0.0, 0.0),
-          "dynamic_friction_range": (0.0, 0.0),
+          "static_friction_range": (0.1, 0.1),
+          "dynamic_friction_range": (0.1, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    reset_leftwheel_friction = EventTerm(
+    randomize_leftwheel_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
@@ -81,7 +81,7 @@ class EventCfg:
       },
     )
     
-    reset_rightwheel_friction = EventTerm(
+    randomize_rightwheel_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
@@ -93,7 +93,7 @@ class EventCfg:
       },
     )
 
-    reset_leftfinger_friction = EventTerm(
+    randomize_leftfinger_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
@@ -105,7 +105,7 @@ class EventCfg:
       },
     )
 
-    reset_rightfinger_friction = EventTerm(
+    randomize_rightfinger_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
@@ -117,7 +117,7 @@ class EventCfg:
       },
     )
 
-    # reset_object_friction = EventTerm(
+    # randomize_object_friction = EventTerm(
     #     func=mdp.randomize_rigid_body_material,
     #     mode="reset",
     #     params={
@@ -129,11 +129,13 @@ class EventCfg:
     #   },
     # )
 
+
+
 @configclass
 class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # env
-    episode_length_s = 7.21  # 1500 timesteps
-    decimation = 2
+    episode_length_s = 8.01  # 1500 timesteps
+    decimation = 5
     state_space = 0
     seed = 42
 
@@ -217,7 +219,8 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     camera: TiledCameraCfg = TiledCameraCfg(
         prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam",
         # offset=TiledCameraCfg.OffsetCfg(pos=(-4.0, 0.0, 3.0), rot=(0.9945, 0.0, 0.1045, 0.0), convention="world"),
-        offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.058), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.058), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.105), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
         data_types=["rgb"],
         spawn=sim_utils.PinholeCameraCfg(
             focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
@@ -230,7 +233,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         prim_path="/World/envs/env_.*/object",
         spawn=sim_utils.UsdFileCfg(
             usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Objects/red_cube.usd"),
-            scale=(0.02, 0.02, 0.02),
+            scale=(0.02, 0.02, 0.08),
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
@@ -315,6 +318,20 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
             ),
         ],
     )
+    object_frame = FrameTransformerCfg(
+        prim_path="/World/envs/env_.*/object",
+        debug_vis=False,
+        visualizer_cfg=marker_cfg,
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="/World/envs/env_.*/object",
+                name="object_up",
+                offset=OffsetCfg(
+                    pos=[0.0, 0.0, 0.06],
+                ),
+            ),
+        ],
+    )
 
     events: EventCfg = EventCfg()
 
@@ -328,7 +345,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
 
     # reward scales
     dist_reward_scale = 1.0
-    lift_reward_scale = 2.0
+    lift_reward_scale = 1.5
     dist_g_reward_scale = 1.0
 
 class Turtlebot3ImageEnv(DirectRLEnv):
@@ -391,6 +408,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self._lee_frame = FrameTransformer(self.cfg.lee_frame)
         self._ree_frame = FrameTransformer(self.cfg.ree_frame)
         self._cube = RigidObject(self.cfg.cube)
+        self._object_frame = FrameTransformer(self.cfg.object_frame)
         # self.goal_markers = VisualizationMarkers(self.cfg.goal)
         # ロボットをシーンに追加
         self.scene.articulations["robot"] = self._robot
@@ -399,6 +417,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.scene.sensors["ee_frame"] = self._ee_frame
         self.scene.sensors["lee_frame"] = self._lee_frame
         self.scene.sensors["ree_frame"] = self._ree_frame
+        self.scene.sensors["object_frame"] = self._object_frame
     
         # 地形の準備
         self.cfg.terrain.num_envs = self.scene.cfg.num_envs
@@ -466,6 +485,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
             self.lee_pos,
             self.ree_pos,
             self.cube_pos,
+            self.object_pos,
             # self.goal_pos,
             self._robot.data.joint_pos,
             self.cfg.dist_reward_scale,
@@ -572,6 +592,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.ee_pos = self._ee_frame.data.target_pos_w[env_ids, 0, :]
         self.lee_pos = self._lee_frame.data.target_pos_w[env_ids, 0, :]
         self.ree_pos = self._ree_frame.data.target_pos_w[env_ids, 0, :]
+        self.object_pos = self._object_frame.data.target_pos_w[env_ids, 0, :]
 
     def _compute_rewards(
         self,
@@ -579,21 +600,23 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         left_tip_pos,
         right_tip_pos,
         cube_pos,
+        object_pos,
         # goal_pos,
         joint_positions,
         dist_reward_scale,
         lift_reward_scale,
         dist_g_reward_scale,
     ):
-        d_c = torch.norm(cube_pos-end_effector_pos, dim=-1)
-        d_l = torch.norm(cube_pos-left_tip_pos, dim=-1)
-        d_r = torch.norm(cube_pos-right_tip_pos, dim=-1)
+        d_c = torch.norm(object_pos-end_effector_pos, dim=-1)
+        d_l = torch.norm(object_pos-left_tip_pos, dim=-1)
+        d_r = torch.norm(object_pos-right_tip_pos, dim=-1)
         dis = (d_c + d_l + d_r) / 3
         # dis_reward = torch.exp(-10*dis)
         dis_reward = 1 - torch.tanh(10*dis)
+        # print(d_c)
 
         # lift_reward = 1 - torch.exp(-100*(cube_pos[:, 2]-0.025/2))
-        lift_reward = torch.where(cube_pos[:, 2] > 0.04, 1.0, 0.0)
+        lift_reward = torch.where(cube_pos[:, 2] > 0.10, 1.0, 0.0)
         # lift_reward = torch.where(cube_pos[:, 2] > 0.04, 1.0, 0.0) * torch.where(dis < 0.03, 1.0, 0.0)
         # lift_reward = (cube_pos[:, 2] - 0.025/2) > 0.04
 

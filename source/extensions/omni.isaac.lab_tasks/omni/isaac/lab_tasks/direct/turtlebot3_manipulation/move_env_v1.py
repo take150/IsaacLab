@@ -48,8 +48,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_left_link"),
-          "static_friction_range": (0.0, 0.0),
-          "dynamic_friction_range": (0.0, 0.0),
+          "static_friction_range": (0.1, 0.1),
+          "dynamic_friction_range": (0.1, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -60,8 +60,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_right_link"),
-          "static_friction_range": (0.0, 0.0),
-          "dynamic_friction_range": (0.0, 0.0),
+          "static_friction_range": (0.1, 0.1),
+          "dynamic_friction_range": (0.1, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -130,10 +130,10 @@ class EventCfg:
 @configclass
 class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
     # env
-    episode_length_s = 7.2  # 1500 timesteps
+    episode_length_s = 7.21  # 1500 timesteps
     decimation = 2
     action_space = 7
-    observation_space = 18
+    observation_space = {"obs": 15}
     state_space = 0
     seed = 42
 
@@ -337,7 +337,7 @@ class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
 
     # reward scales
     dist_reward_scale = 1.0
-    lift_reward_scale = 3.0
+    lift_reward_scale = 2.0
     angle_penalty_scale = 10.0
     dist_g_reward_scale = 5.0
 
@@ -544,15 +544,15 @@ class Turtlebot3MoveEnv(DirectRLEnv):
 
         # print(goal_pos_b)
          
-        obs = torch.cat(
-            (
-                joint_pos,
-                joint_vel,
-                object_b,
-                goal_pos_b,
-            ),
-            dim=-1,
-        )
+        obs = {"obs": torch.cat(
+                    (
+                        joint_pos,
+                        joint_vel,
+                        object_b,
+                        # goal_pos_b,
+                    ),
+                    dim=-1,)
+        }
 
         return obs
 
