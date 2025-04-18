@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import torch
 import torchvision.models as models
+# from torch2trt import torch2trt
 import numpy as np
 import random
 import cv2
@@ -299,10 +300,10 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         spawn=sim_utils.PinholeCameraCfg(
             focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
         ),
-        # width=224,
-        # height=224,
-        width=84,
-        height=84,
+        width=112,
+        height=112,
+        # width=84,
+        # height=84,
     )
     
     cube: RigidObjectCfg = RigidObjectCfg(
@@ -432,7 +433,8 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
 
     action_space = 7
     # observation_space = [camera.height, camera.width, 3]
-    observation_space = {"joint": 8, "rgb": [camera.height, camera.width, 3]}
+    # observation_space = {"joint": 8, "rgb": [camera.height, camera.width, 3]}
+    observation_space = {"joint": 8, "rgb": [512, 7, 7]}
     # observation_space = {"joint": 8, "rgb": 512}
     # observation_space = {"rgb": [camera.height, camera.width, 3]}
 
@@ -499,11 +501,18 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.current_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
         self.previous_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
 
-        # self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-        # self.resnet.fc = torch.nn.Identity()
-        # self.resnet.eval()
-        # self.resnet = self.resnet.to(self.device)
-        # self.preprocess = models.ResNet18_Weights.DEFAULT.transforms()
+        self.img_features = torch.nn.Sequential(
+            *list(models.resnet18(weights=models.ResNet18_Weights.DEFAULT).children())[:-2]
+        ).eval().to(self.device)
+
+        # dummy_input = torch.randn(1, 3, 224, 224, device=self.device)
+        # self.img_features_trt = torch2trt(
+        #     self.img_features, 
+        #     [dummy_input],
+        #     max_batch_size=512,
+        # )
+
+        self.preprocess = models.ResNet18_Weights.DEFAULT.transforms()
 
         # backgrounds_path = os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20")
 
@@ -674,10 +683,19 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
     def _get_observations(self) -> dict:
 
-        rgb = self._camera.data.output["rgb"] / 255.0
-        # with torch.no_grad():
-        #     rgb = self.preprocess(self._camera.data.output["rgb"].permute(0, 3, 1, 2))
-        #     rgb_resnet = self.resnet(rgb)
+        # rgb = self._camera.data.output["rgb"] / 255.0
+        with torch.no_grad():
+            rgb = self.preprocess(self._camera.data.output["rgb"].permute(0, 3, 1, 2))
+            rgb_resnet = self.img_features(rgb)
+
+            # # move the image to the model device
+            # image_proc = self._camera.data.output["rgb"].permute(0, 3, 1, 2).float() / 255.0
+            # # normalize the image
+            # mean = torch.tensor([0.485, 0.456, 0.406], device=self.device).view(1, 3, 1, 1)
+            # std = torch.tensor([0.229, 0.224, 0.225], device=self.device).view(1, 3, 1, 1)
+            # image_proc = (image_proc - mean) / std
+            # rgb_resnet = self.img_features_trt(image_proc)
+            
 
         # # カメラデータからRGB画像を取り出し、CPU上に移動し、numpy配列に変換（uint8型）
         # image_np = self._camera.data.output["rgb"][101, ...].cpu().numpy().astype(np.uint8)  # RGB形式
@@ -713,7 +731,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
                 ),
                 dim=-1,
             ),
-            "rgb": rgb,
+            "rgb": rgb_resnet,
         }
 
         return obs
