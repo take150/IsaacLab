@@ -115,6 +115,19 @@ gym.register(
     },
 )
 
+# 赤、青、黃、緑の物体を把持、前の行動を状態、背景変更、床変更、カメラ２つ
+gym.register(
+    id="Isaac-Turtlebot3-Image-Direct-v4",
+    entry_point=f"{__name__}.image_env_v4:Turtlebot3ImageEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.image_env_v4:Turtlebot3ImageEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
+    },
+)
+
 gym.register(
     id="Isaac-Turtlebot3-Multi-Image-Direct-v0",
     entry_point=f"{__name__}.multi_image_env:Turtlebot3MultiImageEnv",

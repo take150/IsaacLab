@@ -292,8 +292,8 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         },
     )
 
-    camera: TiledCameraCfg = TiledCameraCfg(
-        prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam",
+    camera_1: TiledCameraCfg = TiledCameraCfg(
+        prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam_1",
         # offset=TiledCameraCfg.OffsetCfg(pos=(-4.0, 0.0, 3.0), rot=(0.9945, 0.0, 0.1045, 0.0), convention="world"),
         # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.058), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
         # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.105), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
@@ -302,12 +302,28 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         spawn=sim_utils.PinholeCameraCfg(
             focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
         ),
-        width=112,
-        height=112,
-        # width=84,
-        # height=84,
+        # width=112,
+        # height=112,
+        width=84,
+        height=84,
     )
     
+    camera_2: TiledCameraCfg = TiledCameraCfg(
+        prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam_2",
+        # offset=TiledCameraCfg.OffsetCfg(pos=(-4.0, 0.0, 3.0), rot=(0.9945, 0.0, 0.1045, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.058), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.105), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.017, -0.10, 0.04), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
+        ),
+        # width=112,
+        # height=112,
+        width=84,
+        height=84,
+    )
+
     cube: RigidObjectCfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/object",
         spawn=sim_utils.UsdFileCfg(
@@ -436,7 +452,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
 
     action_space = 7
     # observation_space = [camera.height, camera.width, 3]
-    observation_space = {"joint": 8, "rgb": [camera.height, camera.width, 3]}
+    observation_space = {"joint": 8, "rgb_1": [camera_1.height, camera_1.width, 3], "rgb_2": [camera_2.height, camera_2.width, 3]}
     # observation_space = {"joint": 8, "rgb": [512, 7, 7]}
     # observation_space = {"joint": 8, "rgb": [512, 7, 7]}
     # observation_space = {"joint": 8, "rgb": 512}
@@ -543,7 +559,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
     def _setup_scene(self):
         # ロボットを初期化
         self._robot = Articulation(self.cfg.robot)
-        self._camera = TiledCamera(self.cfg.camera)
+        self._camera_1 = TiledCamera(self.cfg.camera_1)
+        self._camera_2 = TiledCamera(self.cfg.camera_2)
         self._ee_frame = FrameTransformer(self.cfg.ee_frame)
         self._lee_frame = FrameTransformer(self.cfg.lee_frame)
         self._ree_frame = FrameTransformer(self.cfg.ree_frame)
@@ -553,7 +570,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         # self.goal_markers = VisualizationMarkers(self.cfg.goal)
         # ロボットをシーンに追加
         self.scene.articulations["robot"] = self._robot
-        self.scene.sensors["camera"] = self._camera
+        self.scene.sensors["camera_1"] = self._camera_1
+        self.scene.sensors["camera_2"] = self._camera_2
         self.scene.rigid_objects["cube"] = self._cube
         self.scene.sensors["ee_frame"] = self._ee_frame
         self.scene.sensors["lee_frame"] = self._lee_frame
@@ -693,7 +711,9 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
     def _get_observations(self) -> dict:
 
-        rgb = self._camera.data.output["rgb"] / 255.0
+        # rgb = self._camera.data.output["rgb"] / 255.0
+        rgb_1 = self._camera_1.data.output["rgb"] / 255.0
+        rgb_2 = self._camera_2.data.output["rgb"] / 255.0
         # with torch.no_grad():
         #     rgb = self.preprocess(self._camera.data.output["rgb"].permute(0, 3, 1, 2))
         #     rgb = self.img_features(rgb)
@@ -744,7 +764,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
                 ),
                 dim=-1,
             ),
-            "rgb": rgb,
+            "rgb_1": rgb_1,
+            "rgb_2": rgb_2,
         }
 
         return obs
@@ -793,7 +814,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         # lift_reward = torch.where(cube_pos[:, 2] > 0.10, 1.0, 0.0) * torch.where(dis < 0.03, 1.0, 0.0)
         # lift_reward = (cube_pos[:, 2] - 0.025/2) > 0.04
 
-        # actions_penalty = self.action_rate_l2_ratio()
+        actions_penalty = self.action_rate_l2_ratio()
         # dis_g = torch.norm(goal_pos-cube_pos, dim=-1)
         # dis_g_reward = torch.exp(-10*dis_g)
 
