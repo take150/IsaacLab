@@ -35,6 +35,8 @@ from .direct_rl_env_cfg import DirectRLEnvCfg
 from .ui import ViewportCameraController
 from .utils.spaces import sample_space, spec_to_gym_space
 
+import cv2
+
 
 class DirectRLEnv(gym.Env):
     """The superclass for the direct workflow to design environments.
@@ -183,12 +185,43 @@ class DirectRLEnv(gym.Env):
 
         # setup noise cfg for adding action and observation noise
         if self.cfg.action_noise_model:
-            self._action_noise_model: NoiseModel = self.cfg.action_noise_model.class_type(
-                self.cfg.action_noise_model, num_envs=self.num_envs, device=self.device
+            # self._action_noise_model: NoiseModel = self.cfg.action_noise_model.class_type(
+            #     self.cfg.action_noise_model, num_envs=self.num_envs, device=self.device
+            # )
+            self._action_noise_model_joint1: NoiseModel = self.cfg.action_noise_model_joint1.class_type(
+                self.cfg.action_noise_model_joint1, num_envs=self.num_envs, device=self.device
+            )
+            self._action_noise_model_joint2: NoiseModel = self.cfg.action_noise_model_joint2.class_type(
+                self.cfg.action_noise_model_joint2, num_envs=self.num_envs, device=self.device
+            )
+            self._action_noise_model_joint3: NoiseModel = self.cfg.action_noise_model_joint3.class_type(
+                self.cfg.action_noise_model_joint3, num_envs=self.num_envs, device=self.device
+            )
+            self._action_noise_model_joint4: NoiseModel = self.cfg.action_noise_model_joint4.class_type(
+                self.cfg.action_noise_model_joint4, num_envs=self.num_envs, device=self.device
+            )
+            self._action_noise_model_wheel: NoiseModel = self.cfg.action_noise_model_wheel.class_type(
+                self.cfg.action_noise_model_wheel, num_envs=self.num_envs, device=self.device
             )
         if self.cfg.observation_noise_model:
-            self._observation_noise_model: NoiseModel = self.cfg.observation_noise_model.class_type(
-                self.cfg.observation_noise_model, num_envs=self.num_envs, device=self.device
+            # self._observation_noise_model: NoiseModel = self.cfg.observation_noise_model.class_type(
+            #     self.cfg.observation_noise_model, num_envs=self.num_envs, device=self.device
+            # )
+            self._observation_noise_model_joint1: NoiseModel = self.cfg.observation_noise_model_joint1.class_type(
+                self.cfg.observation_noise_model_joint1, num_envs=self.num_envs, device=self.device
+            )
+            self._observation_noise_model_joint2: NoiseModel = self.cfg.observation_noise_model_joint2.class_type(
+                self.cfg.observation_noise_model_joint2, num_envs=self.num_envs, device=self.device
+            )
+            self._observation_noise_model_joint3: NoiseModel = self.cfg.observation_noise_model_joint3.class_type(
+                self.cfg.observation_noise_model_joint3, num_envs=self.num_envs, device=self.device
+            )
+            self._observation_noise_model_joint4: NoiseModel = self.cfg.observation_noise_model_joint4.class_type(
+                self.cfg.observation_noise_model_joint4, num_envs=self.num_envs, device=self.device
+            )
+
+            self._observation_noise_model_rgb: NoiseModel = self.cfg.observation_noise_model_rgb.class_type(
+                self.cfg.observation_noise_model_rgb, num_envs=self.num_envs, device=self.device
             )
 
         # perform events at the start of the simulation
@@ -313,7 +346,12 @@ class DirectRLEnv(gym.Env):
         action = action.to(self.device)
         # add action noise
         if self.cfg.action_noise_model:
-            action = self._action_noise_model.apply(action)
+            # action = self._action_noise_model.apply(action)
+            action[:, 0] = self._action_noise_model_joint1.apply(action[:, 0])
+            action[:, 1] = self._action_noise_model_joint2.apply(action[:, 1])
+            action[:, 2] = self._action_noise_model_joint3.apply(action[:, 2])
+            action[:, 3] = self._action_noise_model_joint4.apply(action[:, 3])
+            action[:, -2:] = self._action_noise_model_wheel.apply(action[:, -2:])
 
         # process actions
         self._pre_physics_step(action)
@@ -379,8 +417,38 @@ class DirectRLEnv(gym.Env):
         # add observation noise
         # note: we apply no noise to the state space (since it is used for critic networks)
         if self.cfg.observation_noise_model:
-            self.obs_buf["policy"] = self._observation_noise_model.apply(self.obs_buf["policy"])
+            # self.obs_buf = self._observation_noise_model.apply(self.obs_buf)
+            # pass
+            # self.obs_buf["obs"][:, 0] = self._observation_noise_model_joint1.apply(self.obs_buf["obs"][:, 0])
+            # self.obs_buf["obs"][:, 1] = self._observation_noise_model_joint2.apply(self.obs_buf["obs"][:, 1])
+            # self.obs_buf["obs"][:, 2] = self._observation_noise_model_joint3.apply(self.obs_buf["obs"][:, 2])
+            # self.obs_buf["obs"][:, 3] = self._observation_noise_model_joint4.apply(self.obs_buf["obs"][:, 3])
+            self.obs_buf["joint"][:, 0] = self._observation_noise_model_joint1.apply(self.obs_buf["joint"][:, 0])
+            self.obs_buf["joint"][:, 1] = self._observation_noise_model_joint2.apply(self.obs_buf["joint"][:, 1])
+            self.obs_buf["joint"][:, 2] = self._observation_noise_model_joint3.apply(self.obs_buf["joint"][:, 2])
+            self.obs_buf["joint"][:, 3] = self._observation_noise_model_joint4.apply(self.obs_buf["joint"][:, 3])
+            # self.obs_buf["rgb"] = self._observation_noise_model_rgb.apply(self.obs_buf["rgb"])
 
+        # # カメラデータからRGB画像を取り出し、CPU上に移動し、numpy配列に変換（uint8型）
+        # image_np = (self.obs_buf["rgb"][0] * 255.0).cpu().numpy().astype(np.uint8)  # RGB形式
+        # # RGBからBGRに変換（OpenCVの表示用）
+        # image_np = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
+
+        # # 画像を拡大。ここでは2倍に拡大する例。
+        # scale_factor = 10.0
+        # image_np = cv2.resize(image_np, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_LINEAR)
+
+        # # ウィンドウを表示（WINDOW_NORMALでウィンドウサイズの変更を可能に）
+        # cv2.namedWindow('Camera Feed', cv2.WINDOW_NORMAL)
+
+        # # 画像をリアルタイムで表示
+        # cv2.imshow('Camera Feed', image_np)
+
+        # # 'q'キーが押されたらウィンドウを閉じる処理
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     cv2.destroyAllWindows()
+        #     exit()
+            
         # return observations, rewards, resets and extras
         return self.obs_buf, self.reward_buf, self.reset_terminated, self.reset_time_outs, self.extras
 
@@ -578,9 +646,19 @@ class DirectRLEnv(gym.Env):
 
         # reset noise models
         if self.cfg.action_noise_model:
-            self._action_noise_model.reset(env_ids)
+            # self._action_noise_model.reset(env_ids)
+            self._action_noise_model_joint1.reset(env_ids)
+            self._action_noise_model_joint2.reset(env_ids)
+            self._action_noise_model_joint3.reset(env_ids)
+            self._action_noise_model_joint4.reset(env_ids)
+            self._action_noise_model_wheel.reset(env_ids)
         if self.cfg.observation_noise_model:
-            self._observation_noise_model.reset(env_ids)
+            # self._observation_noise_model.reset(env_ids)
+            self._observation_noise_model_joint1.reset(env_ids)
+            self._observation_noise_model_joint2.reset(env_ids)
+            self._observation_noise_model_joint3.reset(env_ids)
+            self._observation_noise_model_joint4.reset(env_ids)
+            self._observation_noise_model_rgb.reset(env_ids)
 
         # reset the episode length buffer
         self.episode_length_buf[env_ids] = 0

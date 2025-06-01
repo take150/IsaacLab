@@ -72,7 +72,7 @@ class Turtlebot3MultiImageEnvCfg(DirectMARLEnvCfg):
     robot_1 = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot_1",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_05.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_02.usd"),
             # usd_path=f"{ASSET_ROOT}/omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
             activate_contact_sensors=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -125,7 +125,7 @@ class Turtlebot3MultiImageEnvCfg(DirectMARLEnvCfg):
     robot_2 = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot_2",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_05.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_02.usd"),
             # usd_path=f"{ASSET_ROOT}/omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
             activate_contact_sensors=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -664,6 +664,7 @@ class Turtlebot3MultiImageEnv(DirectMARLEnv):
         # print(sin_angle_to_cube, cos_angle_to_cube)
         # print(base_to_goal_dis)
         # print(sin_angle_to_goal, cos_angle_to_goal)
+        print(camera_data_1.shape)
 
         obs = {
             "robot_1": camera_data_1,

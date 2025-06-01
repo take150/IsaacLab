@@ -24,7 +24,7 @@ import omni.isaac.lab.sim as sim_utils
 import omni.isaac.lab.envs.mdp as mdp
 from omni.isaac.lab.managers import EventTermCfg as EventTerm
 from omni.isaac.lab.managers import SceneEntityCfg
-from omni.isaac.lab.actuators.actuator_cfg import ImplicitActuatorCfg, IdealPDActuatorCfg, DelayedPDActuatorCfg
+from omni.isaac.lab.actuators.actuator_cfg import ImplicitActuatorCfg
 from omni.isaac.lab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
 from omni.isaac.lab.envs import DirectRLEnv, DirectRLEnvCfg
 from omni.isaac.lab.scene import InteractiveSceneCfg
@@ -57,8 +57,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_left_link"),
-          "static_friction_range": (0.005, 0.03),
-          "dynamic_friction_range": (0.005, 0.02),
+          "static_friction_range": (0.0, 0.1),
+          "dynamic_friction_range": (0.0, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -69,8 +69,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_right_link"),
-          "static_friction_range": (0.005, 0.03),
-          "dynamic_friction_range": (0.005, 0.02),
+          "static_friction_range": (0.0, 0.1),
+          "dynamic_friction_range": (0.0, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -81,8 +81,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_left_link"),
-          "static_friction_range": (0.9, 1.1),
-          "dynamic_friction_range": (0.7, 0.9),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -93,8 +93,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_right_link"),
-          "static_friction_range": (0.9, 1.1),
-          "dynamic_friction_range": (0.7, 0.9),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -105,8 +105,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="gripper_left_link"),
-          "static_friction_range": (1.1, 1.3),
-          "dynamic_friction_range": (0.85, 1.05),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -117,32 +117,32 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="gripper_right_link"),
-          "static_friction_range": (1.1, 1.3),
-          "dynamic_friction_range": (0.85, 1.05),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    randomize_object_friction = EventTerm(
-        func=mdp.randomize_rigid_body_material,
-        mode="reset",
-        params={
-          "asset_cfg": SceneEntityCfg("cube", body_names="object"),
-          "static_friction_range": (0.6, 0.8),
-          "dynamic_friction_range": (0.5, 0.7),
-          "restitution_range": (0.5, 0.5),
-          "num_buckets": 1,
-      },
-    )
+    # randomize_object_friction = EventTerm(
+    #     func=mdp.randomize_rigid_body_material,
+    #     mode="reset",
+    #     params={
+    #       "asset_cfg": SceneEntityCfg("cube", body_names="object"),
+    #       "static_friction_range": (1.0, 1.0),
+    #       "dynamic_friction_range": (1.0, 1.0),
+    #       "restitution_range": (0.5, 0.5),
+    #       "num_buckets": 1,
+    #   },
+    # )
 
     randomize_terrain_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground"),
-          "static_friction_range": (0.7, 0.9),
-          "dynamic_friction_range": (0.55, 0.75),
+          "static_friction_range": (0.7, 1.0),
+          "dynamic_friction_range": (0.7, 1.0),
           "restitution_range": (0.8, 0.8),
           "num_buckets": 1,
       },
@@ -213,13 +213,13 @@ class EventCfg:
 class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # env
     episode_length_s = 10.01  # 160 timesteps
-    decimation = 2
+    decimation = 5
     state_space = 0
     seed = 42
 
     # simulation
     sim: SimulationCfg = SimulationCfg(
-        dt=0.005,
+        dt=0.01,
         render_interval=decimation,
         disable_contact_processing=True,
         physx = sim_utils.PhysxCfg(
@@ -246,7 +246,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         prim_path="/World/envs/env_.*/Robot",
         spawn=sim_utils.UsdFileCfg(
             # usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_02.usd"),
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_03.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_02.usd"),
             # usd_path=f"{ASSET_ROOT}/omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
             activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -272,83 +272,49 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
             rot=(1.0, 0.0, 0.0, 0.0),
         ),
         actuators={
-            # "turtlebot3_arm": ImplicitActuatorCfg(
-            #     joint_names_expr=["joint[1-4]"],
-            #     effort_limit=4.1,
-            #     velocity_limit=2.0,
-            #     stiffness={"joint1": 120, "joint2": 100, "joint3": 80, "joint4": 60},
-            #     damping  ={"joint1": 6, "joint2": 5, "joint3": 4, "joint4": 3},
-            # ),
-            # "turtlebot3_gripper": ImplicitActuatorCfg(
-            #     joint_names_expr=["gripper_.*"],
-            #     effort_limit=4.1,
-            #     velocity_limit=0.2,
-            #     stiffness=600.0,
-            #     damping=30.0,
-            # ),
-            # "turtlebot3_wheel": ImplicitActuatorCfg(
-            #     joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
-            #     effort_limit=4.1,
-            #     velocity_limit=4.8,
-            #     stiffness=0.0,
-            #     damping=6.0,
-            # ),
-            "turtlebot3_arm": DelayedPDActuatorCfg(
+            "turtlebot3_arm": ImplicitActuatorCfg(
                 joint_names_expr=["joint[1-4]"],
                 effort_limit=4.1,
-                effort_limit_sim =4.1,
                 velocity_limit=2.0,
-                stiffness={"joint1": 120, "joint2": 100, "joint3": 80, "joint4": 60},
-                damping  ={"joint1": 6, "joint2": 5, "joint3": 4, "joint4": 3},
-                # min_delay=1,
-                # max_delay=2,
+                stiffness=40.0,
+                damping=0.5,
             ),
-            "turtlebot3_gripper": DelayedPDActuatorCfg(
+            "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
-                effort_limit=4.1,
-                effort_limit_sim =4.1,
+                effort_limit=200.0,
                 velocity_limit=0.2,
-                stiffness=600.0,
-                damping=30.0,
-                # min_delay=1,
-                # max_delay=2,
+                stiffness=2e3,
+                damping=1e2,
             ),
-            "turtlebot3_wheel": DelayedPDActuatorCfg(
+            "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
                 effort_limit=4.1,
-                effort_limit_sim =4.1,
                 velocity_limit=4.8,
                 stiffness=0.0,
-                damping=6.0,
-                # min_delay=1,
-                # max_delay=2,
+                damping=0.5,
             ),
         },
     )
 
-    # K = [69.6, 0, 42.0,   0, 92.6, 42.0,   0, 0, 1]
-    # K = [42.27, 0, 26.15, 0, 56.15, 27.17, 0, 0, 1]
-    # K = [132.767666, 0.000000, 60.718848, 0.000000, 132.922229, 61.248024, 0.00, 0.00, 1.0]
-
-    # spawn_cfg = sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
-    #                 intrinsic_matrix=K, width=128, height=128,
-    #                 focal_length=0.304,            # 3.04 mm
-    #                 clipping_range=(0.01, 20.0),
-    #                 focus_distance=0.927,
-    #             )
-
     camera: TiledCameraCfg = TiledCameraCfg(
         prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam",
         update_period=0.03,
-        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.067, 0.039), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
-        # offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.033), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(-4.0, 0.0, 3.0), rot=(0.9945, 0.0, 0.1045, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.058), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.105), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.065, 0.041), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.033), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
         data_types=["rgb"],
         spawn=sim_utils.PinholeCameraCfg(
-            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
+            # focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
+            # focal_length=3.04, focus_distance=1000.0, horizontal_aperture=3.67, clipping_range=(0.1, 20.0)
+            # focal_length=3.04, focus_distance=1000.0, horizontal_aperture=3.76, vertical_aperture=2.76, clipping_range=(0.05, 20.0)
+            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.376, vertical_aperture=0.276, clipping_range=(0.01, 20.0)
         ),
-        # spawn = spawn_cfg,
-        width=120,
-        height=120,
+        # width=112,
+        # height=112,
+        width=84,
+        height=84,
     )
 
     contact_link4_base: ContactSensorCfg = ContactSensorCfg(
@@ -536,19 +502,19 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     action_noise_model = False
 
     action_noise_model_joint1: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.1, operation="add"),
     )
 
     action_noise_model_joint2: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.02, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.024, std=0.05, operation="add"),
     )
 
     action_noise_model_joint3: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.007, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.007, std=0.01, operation="add"),
     )
 
     action_noise_model_joint4: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.003, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.003, std=0.01, operation="add"),
     )
 
     action_noise_model_wheel: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
@@ -719,8 +685,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         
         self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
 
-        # self.robot_arm_targets = torch.tensor([[0.1, 1.57, -0.93, -0.54]], device=self.device)
-        # self.robot_gripper_targets = torch.tensor([[-0.01, -0.01]], device=self.device)
+        # self.robot_arm_targets = torch.tensor([[0.0, 1.4818, -0.6836, -0.7527]], device=self.device)
+        # self.robot_gripper_targets = torch.tensor([[0.019, 0.019]], device=self.device)
 
         self.current_actions = actions
 

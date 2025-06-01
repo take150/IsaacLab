@@ -28,12 +28,15 @@ from omni.isaac.lab.terrains import TerrainImporterCfg
 from omni.isaac.lab.utils import configclass
 from omni.isaac.lab.utils.assets import ISAAC_NUCLEUS_DIR
 import omni.isaac.lab.utils.math as math_utils
+import omni.isaac.lab.utils.noise as noise_utils
 from omni.isaac.lab.utils.math import sample_uniform
 from omni.isaac.lab.markers import VisualizationMarkersCfg, VisualizationMarkers
 from omni.isaac.lab.utils.math import quat_conjugate, quat_from_angle_axis, quat_mul, sample_uniform, saturate
 from omni.isaac.lab.markers.config import FRAME_MARKER_CFG
 from omni.isaac.lab.sensors import FrameTransformerCfg, FrameTransformer
 from omni.isaac.lab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
+from omni.isaac.lab.sensors import ContactSensor, ContactSensorCfg
+
 
 ASSET_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../../../"))
 
@@ -43,73 +46,73 @@ class EventCfg:
 
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
-    reset_leftcaster_friction = EventTerm(
+    randomize_leftcaster_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_left_link"),
-          "static_friction_range": (0.1, 0.1),
-          "dynamic_friction_range": (0.1, 0.1),
+          "static_friction_range": (0.0, 0.1),
+          "dynamic_friction_range": (0.0, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    reset_rightcaster_friction = EventTerm(
+    randomize_rightcaster_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_right_link"),
-          "static_friction_range": (0.1, 0.1),
-          "dynamic_friction_range": (0.1, 0.1),
+          "static_friction_range": (0.0, 0.1),
+          "dynamic_friction_range": (0.0, 0.1),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    reset_leftwheel_friction = EventTerm(
+    randomize_leftwheel_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_left_link"),
-          "static_friction_range": (1.2, 1.2),
-          "dynamic_friction_range": (1.2, 1.2),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
     
-    reset_rightwheel_friction = EventTerm(
+    randomize_rightwheel_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_right_link"),
-          "static_friction_range": (1.2, 1.2),
-          "dynamic_friction_range": (1.2, 1.2),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    reset_leftfinger_friction = EventTerm(
+    randomize_leftfinger_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="gripper_left_link"),
-          "static_friction_range": (1.0, 1.0),
-          "dynamic_friction_range": (1.0, 1.0),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    reset_rightfinger_friction = EventTerm(
+    randomize_rightfinger_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="gripper_right_link"),
-          "static_friction_range": (1.0, 1.0),
-          "dynamic_friction_range": (1.0, 1.0),
+          "static_friction_range": (0.8, 1.0),
+          "dynamic_friction_range": (0.8, 1.0),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -130,8 +133,8 @@ class EventCfg:
 @configclass
 class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
     # env
-    episode_length_s = 7.21  # 1500 timesteps
-    decimation = 2
+    episode_length_s = 10.01  # 1500 timesteps
+    decimation = 5
     action_space = 7
     observation_space = {"obs": 15}
     state_space = 0
@@ -164,9 +167,9 @@ class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
     robot = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_02.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision.usd"),
             # usd_path=f"{ASSET_ROOT}/omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
-            activate_contact_sensors=False,
+            activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=False,
                 max_depenetration_velocity=5.0,
@@ -186,7 +189,7 @@ class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
                 "wheel_left_joint": 0.0,
                 "wheel_right_joint": 0.0,
             },
-            pos=(0.0, 1.0, 0.0),
+            pos=(0.0, 0.0, 0.0),
             rot=(1.0, 0.0, 0.0, 0.0),
         ),
         actuators={
@@ -231,6 +234,27 @@ class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
                 mass_props=sim_utils.MassPropertiesCfg(mass=0.05),
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
+
+    contact_link4_base: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/link4",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/Robot/base_link"],
+    )
+
+    contact_leftgripper_object: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/gripper_left_link",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/object"],
+    )
+
+    contact_rightgripper_object: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/gripper_right_link",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/object"],
     )
 
     goal: RigidObjectCfg = RigidObjectCfg(
@@ -332,14 +356,37 @@ class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
 
     events: EventCfg = EventCfg()
 
+    observation_noise_model = True
+
+    observation_noise_model_joint1: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    )
+
+    observation_noise_model_joint2: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    )
+
+    observation_noise_model_joint3: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    )
+
+    observation_noise_model_joint4: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    )
+
+    observation_noise_model_rgb: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    )    
+
     action_scale = 1.0
     dof_velocity_scale = 0.1
 
     # reward scales
     dist_reward_scale = 1.0
-    lift_reward_scale = 2.0
+    lift_reward_scale = 1.0
     angle_penalty_scale = 10.0
     dist_g_reward_scale = 5.0
+    contact_penalty_scale = -0.1
 
 class Turtlebot3MoveEnv(DirectRLEnv):
     # pre-physics step calls
@@ -393,22 +440,27 @@ class Turtlebot3MoveEnv(DirectRLEnv):
     def _setup_scene(self):
         # ロボットを初期化
         self._robot = Articulation(self.cfg.robot)
+        self._contact_link4_base = ContactSensor(self.cfg.contact_link4_base)
+        self._contact_leftgripper_object = ContactSensor(self.cfg.contact_leftgripper_object)
+        self._contact_rightgripper_object = ContactSensor(self.cfg.contact_rightgripper_object)
         self._ee_frame = FrameTransformer(self.cfg.ee_frame)
         self._lee_frame = FrameTransformer(self.cfg.lee_frame)
         self._ree_frame = FrameTransformer(self.cfg.ree_frame)
         self._cube = RigidObject(self.cfg.cube)
-        self._goal = RigidObject(self.cfg.goal)
-        self._goal_frame = FrameTransformer(self.cfg.goal_frame)
+        # self._goal = RigidObject(self.cfg.goal)
+        # self._goal_frame = FrameTransformer(self.cfg.goal_frame)
         # self.goal_markers = VisualizationMarkers(self.cfg.goal)
         # ロボットをシーンに追加
         self.scene.articulations["robot"] = self._robot
+        self.scene.sensors["contact_link4_base"] = self._contact_link4_base
+        self.scene.sensors["contact_leftgripper_object"] = self._contact_leftgripper_object
+        self.scene.sensors["contact_rightgripper_object"] = self._contact_rightgripper_object
         self.scene.rigid_objects["cube"] = self._cube
         self.scene.sensors["ee_frame"] = self._ee_frame
         self.scene.sensors["lee_frame"] = self._lee_frame
         self.scene.sensors["ree_frame"] = self._ree_frame
-        self.scene.rigid_objects["goal"] = self._goal
-        self.scene.sensors["goal_frame"] = self._goal_frame
-        
+        # self.scene.rigid_objects["goal"] = self._goal
+        # self.scene.sensors["goal_frame"] = self._goal_frame
     
         # 地形の準備
         self.cfg.terrain.num_envs = self.scene.cfg.num_envs
@@ -478,7 +530,10 @@ class Turtlebot3MoveEnv(DirectRLEnv):
             self.lee_pos,
             self.ree_pos,
             self.cube_pos,
-            self.goal_pos,
+            # self.goal_pos,
+            self.contact_link4_base,
+            self.contact_leftgripper_object,
+            self.contact_rightgripper_object,
             self._robot.data.joint_pos[:, self.arm_ids],
             self._robot.data.default_joint_pos[:, self.arm_ids],
             self.robot_dof_upper_limits[self.arm_ids],
@@ -487,6 +542,7 @@ class Turtlebot3MoveEnv(DirectRLEnv):
             self.cfg.lift_reward_scale,
             self.cfg.angle_penalty_scale,
             self.cfg.dist_g_reward_scale,
+            self.cfg.contact_penalty_scale,
         )
 
     def _reset_idx(self, env_ids: torch.Tensor | None):
@@ -505,13 +561,14 @@ class Turtlebot3MoveEnv(DirectRLEnv):
         default_cube_state[:, :3] += self.scene.env_origins[env_ids]
         default_cube_state[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            pose_range = {"x": (0.4, 0.5), "y": (0.9, 1.1), "z": (0.0, 0.0)},
+            # pose_range = {"x": (0.4, 0.5), "y": (-0.1, 0.1), "z": (0.0, 0.0)},
+            pose_range = {"x": (0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01)},
         )
         self._cube.write_root_link_pose_to_sim(default_cube_state[:, :7], env_ids=env_ids)
 
-        default_goal_state = self._goal.data.default_root_state[env_ids, :7].clone()
-        default_goal_state[:, :3] += self.scene.env_origins[env_ids]
-        self._goal.write_root_link_pose_to_sim(default_goal_state)
+        # default_goal_state = self._goal.data.default_root_state[env_ids, :7].clone()
+        # default_goal_state[:, :3] += self.scene.env_origins[env_ids]
+        # self._goal.write_root_link_pose_to_sim(default_goal_state)
 
         # Need to refresh the intermediate values so that _get_observations() can use the latest values
         self._compute_intermediate_values(env_ids)
@@ -537,9 +594,9 @@ class Turtlebot3MoveEnv(DirectRLEnv):
         )
         object_b = torch.cat((object_pos_b, object_rot_b), dim=1)
 
-        goal_pos_b, _ = math_utils.subtract_frame_transforms(
-            self.base_pos, self.base_rot, self.goal_pos, self.goal_rot
-        )
+        # goal_pos_b, _ = math_utils.subtract_frame_transforms(
+        #     self.base_pos, self.base_rot, self.goal_pos, self.goal_rot
+        # )
         # goal_b = torch.cat((goal_pos_b, goal_rot_b), dim=1)
 
         # print(goal_pos_b)
@@ -568,8 +625,11 @@ class Turtlebot3MoveEnv(DirectRLEnv):
         self.ee_pos = self._ee_frame.data.target_pos_w[env_ids, 0, :]
         self.lee_pos = self._lee_frame.data.target_pos_w[env_ids, 0, :]
         self.ree_pos = self._ree_frame.data.target_pos_w[env_ids, 0, :]
-        self.goal_pos = self._goal_frame.data.target_pos_w[env_ids, 0, :]
-        self.goal_rot = self._goal_frame.data.target_quat_w[env_ids, 0, :]
+        # self.goal_pos = self._goal_frame.data.target_pos_w[env_ids, 0, :]
+        # self.goal_rot = self._goal_frame.data.target_quat_w[env_ids, 0, :]
+        self.contact_link4_base = self._contact_link4_base.data.force_matrix_w[env_ids, :]
+        self.contact_leftgripper_object = self._contact_leftgripper_object.data.force_matrix_w[env_ids, :]
+        self.contact_rightgripper_object = self._contact_rightgripper_object.data.force_matrix_w[env_ids, :]
 
     def _compute_rewards(
         self,
@@ -577,7 +637,10 @@ class Turtlebot3MoveEnv(DirectRLEnv):
         left_tip_pos,
         right_tip_pos,
         cube_pos,
-        goal_pos,
+        # goal_pos,
+        contact_link4_base,
+        contact_leftgripper_object,
+        contact_rightgripper_object,
         joint_pos,
         default_joint_pos,
         joint_pos_upper,
@@ -586,17 +649,19 @@ class Turtlebot3MoveEnv(DirectRLEnv):
         lift_reward_scale,
         angle_penalty_scale,
         dist_g_reward_scale,
+        contact_penalty_scale,
     ):
         d_c = torch.norm(cube_pos-end_effector_pos, dim=-1)
         d_l = torch.norm(cube_pos-left_tip_pos, dim=-1)
         d_r = torch.norm(cube_pos-right_tip_pos, dim=-1)
         dis = (d_c + d_l + d_r) / 3
-        # dis_reward = torch.exp(-10*dis)
-        dis_reward_0 = 1 - torch.tanh(10*dis)
+        dis_reward = torch.exp(-10*dis)
+        # dis_reward_0 = 1 - torch.tanh(10*dis)
         # dis_reward_1 = 1 - torch.tanh(3*dis)
 
-        # lift_reward = 1 - torch.exp(-100*(cube_pos[:, 2]-0.025/2))
-        lift_reward = torch.where(cube_pos[:, 2] > 0.04, 1.0, 0.0)
+        catch_object = torch.norm(contact_leftgripper_object, dim=-1).squeeze() * torch.norm(contact_rightgripper_object, dim=-1).squeeze() > 1.0
+        # lift_reward = (1 - torch.exp(-100*(cube_pos[:, 2]-0.1/2))) * contact_object
+        lift_reward = torch.where(cube_pos[:, 2] > 0.04, 1.0, 0.0) * catch_object
         # lift_reward = torch.where(cube_pos[:, 2] > 0.04, 1.0, 0.0) * torch.where(dis < 0.025, 1.0, 0.0)
         # lift_reward = (cube_pos[:, 2] - 0.025/2) > 0.04
 
@@ -626,10 +691,13 @@ class Turtlebot3MoveEnv(DirectRLEnv):
 
         # print(dis_reward_0, dis_reward_1)
 
+        contact_penalty = torch.norm(contact_link4_base, dim=-1).squeeze() > 1.0
+
         rewards = (
-            dist_reward_scale * dis_reward_0
-            # + dist_reward_scale * dis_reward_1
+            dist_reward_scale * dis_reward
+            # + catch_reward_scale * catch_object
             + lift_reward_scale * lift_reward
+            + contact_penalty_scale * contact_penalty
             # + angle_penalty_scale * angle_penalty
             # + dist_g_reward_scale * dis_g_reward_0
             # + dist_g_reward_scale * dis_g_reward_1

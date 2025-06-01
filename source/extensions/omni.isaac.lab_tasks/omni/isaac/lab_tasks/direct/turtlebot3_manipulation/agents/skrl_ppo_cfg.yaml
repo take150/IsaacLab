@@ -53,14 +53,14 @@ agent:
   mini_batches: 12
   discount_factor: 0.99
   lambda: 0.95
-  learning_rate: 1.0e-04
+  learning_rate: 5.0e-04
   learning_rate_scheduler: KLAdaptiveLR
   learning_rate_scheduler_kwargs:
     kl_threshold: 0.01
     kl_factor: 2
-    min_lr: 5.0e-06
-    max_lr: 5.0e-03
-    lr_factor: 1.5
+    min_lr: 1.0e-06
+    max_lr: 1.0e-02
+    lr_factor: 1.2
   state_preprocessor: RunningStandardScaler
   state_preprocessor_kwargs: null
   value_preprocessor: RunningStandardScaler

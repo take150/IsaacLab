@@ -37,7 +37,7 @@ ASSET_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.
 @configclass
 class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
     # env
-    episode_length_s = 7.2  # 1500 timesteps
+    episode_length_s = 7.21  # 1500 timesteps
     decimation = 2
     action_space = 7
     observation_space = 15
@@ -71,7 +71,7 @@ class Turtlebot3MoveEnvCfg(DirectRLEnvCfg):
     robot = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_05.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision.usd"),
             # usd_path=f"{ASSET_ROOT}/omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
             activate_contact_sensors=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -423,20 +423,15 @@ class Turtlebot3MoveEnv(DirectRLEnv):
         # sin_angle_to_cube, cos_angle_to_cube = compute_angle_to_(self.base_rot, self.base_pos, self.cube_pos)
         # sin_angle_to_goal, cos_angle_to_goal = compute_angle_to_(self.base_rot, self.base_pos, self.goal_pos)
 
-        obs = torch.cat(
-            (
-                joint_pos,
-                joint_vel,
-                object_b,
-                # base_to_cube_dis,
-                # base_to_goal_dis,
-                # sin_angle_to_cube,
-                # cos_angle_to_cube,
-                # sin_angle_to_goal,
-                # cos_angle_to_goal,
-            ),
-            dim=-1,
-        )
+        obs = {"obs": torch.cat(
+                    (
+                        joint_pos,
+                        joint_vel,
+                        object_b,
+                        # goal_pos_b,
+                    ),
+                    dim=-1,)
+        }
 
         # print(222222222222222222222222222222222)
         # print(self.base_rot)
