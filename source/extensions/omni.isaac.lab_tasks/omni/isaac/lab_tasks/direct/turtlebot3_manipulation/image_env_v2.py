@@ -213,13 +213,13 @@ class EventCfg:
 class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # env
     episode_length_s = 10.01  # 160 timesteps
-    decimation = 2
+    decimation = 5
     state_space = 0
     seed = 42
 
     # simulation
     sim: SimulationCfg = SimulationCfg(
-        dt=0.005,
+        dt=0.01,
         render_interval=decimation,
         disable_contact_processing=True,
         physx = sim_utils.PhysxCfg(
@@ -785,8 +785,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
         # initialize robot state
         joint_pos = self._robot.data.default_joint_pos[env_ids] + sample_uniform(
-            -0.25,
-            0.25,
+            -0.5,
+            0.5,
             (len(env_ids), self._robot.num_joints),
             self.device,
         )
