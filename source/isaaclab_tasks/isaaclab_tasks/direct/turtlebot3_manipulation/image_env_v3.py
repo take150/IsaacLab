@@ -15,35 +15,37 @@ import math
 import os
 from typing import Tuple
 
-import omni.isaac.core.utils.prims as prims_utils
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.torch.transformations import tf_combine, tf_inverse, tf_vector
+import isaacsim.core.utils.prims as prims_utils
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.utils.torch.transformations import tf_combine, tf_inverse, tf_vector
 from pxr import UsdGeom
 
-import omni.isaac.lab.sim as sim_utils
-import omni.isaac.lab.envs.mdp as mdp
-from omni.isaac.lab.managers import EventTermCfg as EventTerm
-from omni.isaac.lab.managers import SceneEntityCfg
-from omni.isaac.lab.actuators.actuator_cfg import ImplicitActuatorCfg
-from omni.isaac.lab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
-from omni.isaac.lab.envs import DirectRLEnv, DirectRLEnvCfg
-from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab.sim import SimulationCfg
-from omni.isaac.lab.terrains import TerrainImporterCfg
-from omni.isaac.lab.utils import configclass
-from omni.isaac.lab.utils.assets import NUCLEUS_ASSET_ROOT_DIR
-import omni.isaac.lab.utils.math as math_utils
-import omni.isaac.lab.utils.noise as noise_utils
-from omni.isaac.lab.utils.math import sample_uniform
-from omni.isaac.lab.markers import VisualizationMarkersCfg, VisualizationMarkers
-from omni.isaac.lab.utils.math import quat_conjugate, quat_from_angle_axis, quat_mul, sample_uniform, saturate
-from omni.isaac.lab.markers.config import FRAME_MARKER_CFG
-from omni.isaac.lab.sensors import FrameTransformerCfg, FrameTransformer
-from omni.isaac.lab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
-from omni.isaac.lab.sensors import TiledCamera, TiledCameraCfg
-from omni.isaac.lab.sensors import ContactSensor, ContactSensorCfg
+import isaaclab.sim as sim_utils
+import isaaclab.envs.mdp as mdp
+from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.managers import SceneEntityCfg
+from isaaclab.actuators.actuator_cfg import ImplicitActuatorCfg, IdealPDActuatorCfg, DelayedPDActuatorCfg
+from isaaclab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
+from isaaclab.envs import DirectRLEnv, DirectRLEnvCfg
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sim import SimulationCfg
+from isaaclab.terrains import TerrainImporterCfg
+from isaaclab.utils import configclass
+from isaaclab.utils.assets import NUCLEUS_ASSET_ROOT_DIR
+import isaaclab.utils.math as math_utils
+import isaaclab.utils.noise as noise_utils
+from isaaclab.utils.math import sample_uniform
+from isaaclab.markers import VisualizationMarkersCfg, VisualizationMarkers
+from isaaclab.utils.math import quat_conjugate, quat_from_angle_axis, quat_mul, sample_uniform, saturate
+from isaaclab.markers.config import FRAME_MARKER_CFG
+from isaaclab.sensors import FrameTransformerCfg, FrameTransformer
+from isaaclab.sensors.frame_transformer.frame_transformer_cfg import OffsetCfg
+from isaaclab.sensors import TiledCamera, TiledCameraCfg
+from isaaclab.sensors import ContactSensor, ContactSensorCfg
+from isaaclab.sim.schemas import activate_contact_sensors
+from isaaclab.utils.buffers import CircularBuffer
 
-ASSET_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../../../"))
+ASSET_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
 
 @configclass
 class EventCfg:
@@ -56,8 +58,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_left_link"),
-          "static_friction_range": (0.0, 0.1),
-          "dynamic_friction_range": (0.0, 0.1),
+          "static_friction_range": (0.005, 0.03),
+          "dynamic_friction_range": (0.005, 0.02),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -68,8 +70,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_right_link"),
-          "static_friction_range": (0.0, 0.1),
-          "dynamic_friction_range": (0.0, 0.1),
+          "static_friction_range": (0.005, 0.03),
+          "dynamic_friction_range": (0.005, 0.02),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -80,8 +82,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_left_link"),
-          "static_friction_range": (0.8, 1.0),
-          "dynamic_friction_range": (0.8, 1.0),
+          "static_friction_range": (0.4, 0.6),
+          "dynamic_friction_range": (0.3, 0.4),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -92,8 +94,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_right_link"),
-          "static_friction_range": (0.8, 1.0),
-          "dynamic_friction_range": (0.8, 1.0),
+          "static_friction_range": (0.4, 0.6),
+          "dynamic_friction_range": (0.3, 0.4),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -104,8 +106,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="gripper_left_link"),
-          "static_friction_range": (0.8, 1.0),
-          "dynamic_friction_range": (0.8, 1.0),
+          "static_friction_range": (1.1, 1.3),
+          "dynamic_friction_range": (0.85, 1.05),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -116,32 +118,32 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="gripper_right_link"),
-          "static_friction_range": (0.8, 1.0),
-          "dynamic_friction_range": (0.8, 1.0),
+          "static_friction_range": (1.1, 1.3),
+          "dynamic_friction_range": (0.85, 1.05),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
     )
 
-    # randomize_object_friction = EventTerm(
-    #     func=mdp.randomize_rigid_body_material,
-    #     mode="reset",
-    #     params={
-    #       "asset_cfg": SceneEntityCfg("cube", body_names="object"),
-    #       "static_friction_range": (1.0, 1.0),
-    #       "dynamic_friction_range": (1.0, 1.0),
-    #       "restitution_range": (0.5, 0.5),
-    #       "num_buckets": 1,
-    #   },
-    # )
+    randomize_object_friction = EventTerm(
+        func=mdp.randomize_rigid_body_material,
+        mode="reset",
+        params={
+          "asset_cfg": SceneEntityCfg("cube", body_names="object"),
+          "static_friction_range": (0.7, 0.9),
+          "dynamic_friction_range": (0.6, 0.8),
+          "restitution_range": (0.5, 0.5),
+          "num_buckets": 1,
+      },
+    )
 
     randomize_terrain_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground"),
-          "static_friction_range": (0.7, 1.0),
-          "dynamic_friction_range": (0.7, 1.0),
+          "static_friction_range": (0.4, 0.6),
+          "dynamic_friction_range": (0.25, 0.45),
           "restitution_range": (0.8, 0.8),
           "num_buckets": 1,
       },
@@ -182,26 +184,36 @@ class EventCfg:
         is_global_time=True,
         params={
             "event_name": "randomize_dome_light",
-            "light_paths": ["/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/blocky_photo_studio_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/zwartkops_pit_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_02_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/blue_photo_studio_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/boma_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/rostock_laage_airport_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_3_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/poly_haven_studio_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/creepy_bathroom_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_01_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_night_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/metro_noord_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/photo_studio_loft_hall_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/studio_small_09_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/mirrored_hall_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/hangar_interior_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/empty_play_room_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/modern_bathroom_4k.hdr",
-                            "/home/takenami/IsaacLab/source/extensions/omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_1_4k.hdr",
+            "light_paths": ["/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/abandoned_garage_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blinds_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blocky_photo_studio_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/boma_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blue_photo_studio_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_01_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_02_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/carpentry_shop_02_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/cinema_hall_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/climbing_gym_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/creepy_bathroom_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/empty_play_room_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/gym_01_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hall_of_finfish_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hall_of_mammals_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hangar_interior_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/mirrored_hall_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/metro_noord_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/modern_bathroom_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/photo_studio_loft_hall_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/poly_haven_studio_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/rostock_laage_airport_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/sepulchral_chapel_basement_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_1_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_3_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/studio_small_09_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_night_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/whale_skeleton_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/zwartkops_pit_4k.hdr",
                             ],
             "light_rotation": [(0.0, 0.0, 0.0), (0.0, 0.0, math.pi * 2)]
         }
@@ -211,7 +223,7 @@ class EventCfg:
 @configclass
 class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # env
-    episode_length_s = 10.01  # 160 timesteps
+    episode_length_s = 50.01  # 160 timesteps
     decimation = 5
     state_space = 0
     seed = 42
@@ -220,13 +232,13 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     sim: SimulationCfg = SimulationCfg(
         dt=0.01,
         render_interval=decimation,
-        disable_contact_processing=True,
-        physx = sim_utils.PhysxCfg(
-            bounce_threshold_velocity = 0.01,
-            gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4,
-            gpu_total_aggregate_pairs_capacity = 16 * 1024,
-            friction_correlation_distance = 0.00625,
-        ),
+        # disable_contact_processing=True,
+        # physx = sim_utils.PhysxCfg(
+        #     bounce_threshold_velocity = 0.01,
+        #     gpu_found_lost_aggregate_pairs_capacity = 1024 * 1024 * 4,
+        #     gpu_total_aggregate_pairs_capacity = 16 * 1024,
+        #     friction_correlation_distance = 0.00625,
+        # ),
         physics_material=sim_utils.RigidBodyMaterialCfg(
             friction_combine_mode="multiply",
             restitution_combine_mode="multiply",
@@ -243,11 +255,15 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # robot
     robot = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot",
-        spawn=sim_utils.UsdFileCfg(
-            # usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_merge_02.usd"),
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_02.usd"),
-            # usd_path=f"{ASSET_ROOT}/omni.isaac.lab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
+        spawn=sim_utils.MultiUsdFileCfg(
+            usd_path=[
+                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_00.usd"),
+                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_01.usd"),
+                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_02.usd"),
+                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_03.usd"),
+            ],
             activate_contact_sensors=True,
+            random_choice=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=False,
                 max_depenetration_velocity=5.0,
@@ -271,49 +287,94 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
             rot=(1.0, 0.0, 0.0, 0.0),
         ),
         actuators={
+            # "turtlebot3_arm": ImplicitActuatorCfg(
+            #     joint_names_expr=["joint[1-4]"],
+            #     effort_limit=4.1,
+            #     velocity_limit=0.2,
+            #     stiffness={"joint1": 120, "joint2": 100, "joint3": 80, "joint4": 60},
+            #     damping  ={"joint1": 6, "joint2": 5, "joint3": 4, "joint4": 3},
+            # ),
             "turtlebot3_arm": ImplicitActuatorCfg(
                 joint_names_expr=["joint[1-4]"],
                 effort_limit=4.1,
-                velocity_limit=2.0,
-                stiffness=40.0,
-                damping=0.5,
+                velocity_limit=0.02,
+                stiffness=80.0,
+                damping=4.0,
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
-                effort_limit=200.0,
-                velocity_limit=0.2,
-                stiffness=2e3,
-                damping=1e2,
+                effort_limit=4.1,
+                velocity_limit=0.02,
+                stiffness=2000.0,
+                damping=100.0,
             ),
+            # "turtlebot3_wheel": ImplicitActuatorCfg(
+            #     joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
+            #     effort_limit=4.1,
+            #     velocity_limit=1.8,
+            #     stiffness=0.0,
+            #     damping=6.0,
+            # ),
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
                 effort_limit=4.1,
-                velocity_limit=4.8,
+                velocity_limit=0.2,
                 stiffness=0.0,
                 damping=0.5,
             ),
+            # "turtlebot3_arm": DelayedImplicitActuatorCfg(
+            #     joint_names_expr=["joint[1-4]"],
+            #     effort_limit=4.1,
+            #     velocity_limit=2.0,
+            #     stiffness={"joint1": 120, "joint2": 100, "joint3": 80, "joint4": 60},
+            #     damping  ={"joint1": 6, "joint2": 5, "joint3": 4, "joint4": 3},
+            #     min_delay=1,
+            #     max_delay=10,
+            # ),
+            # "turtlebot3_gripper": DelayedImplicitActuatorCfg(
+            #     joint_names_expr=["gripper_.*"],
+            #     effort_limit=4.1,
+            #     velocity_limit=0.2,
+            #     stiffness=600.0,
+            #     damping=30.0,
+            #     min_delay=1,
+            #     max_delay=10,
+            # ),
+            # "turtlebot3_wheel": DelayedImplicitActuatorCfg(
+            #     joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
+            #     effort_limit=4.1,
+            #     velocity_limit=4.8,
+            #     stiffness=0.0,
+            #     damping=6.0,
+            #     min_delay=1,
+            #     max_delay=10,
+            # ),
         },
     )
+
+    # K = [69.6, 0, 42.0,   0, 92.6, 42.0,   0, 0, 1]
+    # K = [42.27, 0, 26.15, 0, 56.15, 27.17, 0, 0, 1]
+    # K = [132.767666, 0.000000, 60.718848, 0.000000, 132.922229, 61.248024, 0.00, 0.00, 1.0]
+
+    # spawn_cfg = sim_utils.PinholeCameraCfg.from_intrinsic_matrix(
+    #                 intrinsic_matrix=K, width=128, height=128,
+    #                 focal_length=0.304,            # 3.04 mm
+    #                 clipping_range=(0.01, 20.0),
+    #                 focus_distance=0.927,
+    #             )
 
     camera: TiledCameraCfg = TiledCameraCfg(
         prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam",
         update_period=0.03,
-        # offset=TiledCameraCfg.OffsetCfg(pos=(-4.0, 0.0, 3.0), rot=(0.9945, 0.0, 0.1045, 0.0), convention="world"),
-        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.058), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
-        # offset=TiledCameraCfg.OffsetCfg(pos=(0.017, 0.011, 0.105), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
-        # offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.065, 0.041), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
-        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.033), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        # offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.067, 0.039), rot=(1.0, 0.0, 0.0, 0.0), convention="world"),
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.041), rot=(0.99756405,  0.0,  0.06975647,  0.0), convention="world"),
         data_types=["rgb"],
         spawn=sim_utils.PinholeCameraCfg(
-            # focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 20.0)
-            # focal_length=3.04, focus_distance=1000.0, horizontal_aperture=3.67, clipping_range=(0.1, 20.0)
-            # focal_length=3.04, focus_distance=1000.0, horizontal_aperture=3.76, vertical_aperture=2.76, clipping_range=(0.05, 20.0)
-            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.376, vertical_aperture=0.276, clipping_range=(0.01, 20.0)
+            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
         ),
-        # width=112,
-        # height=112,
-        width=84,
-        height=84,
+        # spawn = spawn_cfg,
+        width=120,
+        height=120,
     )
 
     contact_link4_base: ContactSensorCfg = ContactSensorCfg(
@@ -322,21 +383,68 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         history_length=0,
         filter_prim_paths_expr=["/World/envs/env_.*/Robot/base_link"],
     )
+
+    contact_link5_base: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/link5",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/Robot/base_link"],
+    )
     
+    # cube: RigidObjectCfg = RigidObjectCfg(
+    #     prim_path="/World/envs/env_.*/object",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=os.path.join(ASSET_ROOT, "isaaclab_assets/data/Objects/red_cube.usd"),
+    #         scale=(0.02, 0.02, 0.02),
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #                 solver_position_iteration_count=16,
+    #                 solver_velocity_iteration_count=1,
+    #                 max_angular_velocity=1000.0,
+    #                 max_linear_velocity=1000.0,
+    #                 max_depenetration_velocity=5.0,
+    #                 disable_gravity=False,
+    #             ),
+    #             mass_props=sim_utils.MassPropertiesCfg(mass=0.06),
+    #     ),
+    #     init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0), rot=(1.0, 0.0, 0.0, 0.0)),
+    # )
+
     cube: RigidObjectCfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/object",
-        spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Objects/red_cube.usd"),
-            scale=(0.02, 0.02, 0.02),
-            rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                    solver_position_iteration_count=16,
-                    solver_velocity_iteration_count=1,
-                    max_angular_velocity=1000.0,
-                    max_linear_velocity=1000.0,
-                    max_depenetration_velocity=5.0,
-                    disable_gravity=False,
+        spawn=sim_utils.MultiAssetSpawnerCfg(
+            assets_cfg=[
+                sim_utils.CuboidCfg(
+                    size=(0.036, 0.036, 0.036),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
-                mass_props=sim_utils.MassPropertiesCfg(mass=0.06),
+                sim_utils.CuboidCfg(
+                    size=(0.038, 0.038, 0.038),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(0.04, 0.04, 0.04),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(0.042, 0.042, 0.042),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(0.044, 0.044, 0.044),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+            ],
+            random_choice=False,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                        solver_position_iteration_count=16,
+                        solver_velocity_iteration_count=1,
+                        max_angular_velocity=1000.0,
+                        max_linear_velocity=1000.0,
+                        max_depenetration_velocity=5.0,
+                        disable_gravity=False,
+                    ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.06),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0), rot=(1.0, 0.0, 0.0, 0.0)),
     )
@@ -367,11 +475,55 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # )
 
     # ground plane
+    # ground_plane: RigidObjectCfg = RigidObjectCfg(
+    #     prim_path="/World/envs/env_.*/ground",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=os.path.join(ASSET_ROOT, "isaaclab_assets/data/Objects/red_cube.usd"),
+    #         scale=(4.0, 4.0, 0.005),
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #                 solver_position_iteration_count=16,
+    #                 solver_velocity_iteration_count=1,
+    #                 max_angular_velocity=1000.0,
+    #                 max_linear_velocity=1000.0,
+    #                 max_depenetration_velocity=5.0,
+    #                 disable_gravity=False,
+    #                 kinematic_enabled=True,
+    #             ),
+    #         mass_props=sim_utils.MassPropertiesCfg(mass=0.05),
+    #     ),
+    #     init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, -0.005), rot=(1.0, 0.0, 0.0, 0.0)),
+    # )
+
     ground_plane: RigidObjectCfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/ground",
-        spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Objects/red_cube.usd"),
-            scale=(4.0, 4.0, 0.005),
+        spawn=sim_utils.MultiAssetSpawnerCfg(
+            assets_cfg=[
+                sim_utils.CuboidCfg(
+                    size=(1.3, 1.3, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(2.0, 2.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(4.0, 4.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(6.0, 6.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(8.0, 8.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(10.0, 10.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+            ],
+            random_choice=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
@@ -381,9 +533,24 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
                     disable_gravity=False,
                     kinematic_enabled=True,
                 ),
-            mass_props=sim_utils.MassPropertiesCfg(mass=0.05),
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, -0.005), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
+
+    contact_leftgripper_ground: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/gripper_left_link",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/ground"],
+    )
+
+    contact_rightgripper_ground: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/gripper_right_link",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/ground"],
     )
 
     # terrain = TerrainImporterCfg(
@@ -466,7 +633,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
 
     action_space = 7
     # observation_space = [camera.height, camera.width, 3]
-    observation_space = {"joint": 8, "rgb": [camera.height, camera.width, 3]}
+    observation_space = {"joint": 6, "rgb": [camera.height, camera.width, 3], "object": 7, "actions": 7}
     # observation_space = {"joint": 8, "rgb": [512, 7, 7]}
     # observation_space = {"joint": 8, "rgb": [512, 7, 7]}
     # observation_space = {"joint": 8, "rgb": 512}
@@ -498,26 +665,26 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
       noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
     )    
 
-    action_noise_model = False
+    action_noise_model = True
 
     action_noise_model_joint1: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.1, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
     )
 
     action_noise_model_joint2: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.024, std=0.05, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.025, std=0.0025, operation="add"),
     )
 
     action_noise_model_joint3: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.007, std=0.01, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.01, std=0.0025, operation="add"),
     )
 
     action_noise_model_joint4: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=-0.003, std=0.01, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.005, std=0.0015, operation="add"),
     )
 
     action_noise_model_wheel: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=2.0, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.1, operation="add"),
     )
 
     action_scale = 1.0
@@ -527,9 +694,11 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     dist_reward_scale = 1.0
     catch_reward_scale = 0.5
     lift_reward_scale = 1.0
-    action_penalty_scale = 0.1
+    action_penalty_scale = -0.1
     dist_g_reward_scale = 1.0
-    contact_penalty_scale = -0.1
+    self_collision_penalty_scale = -0.5
+    contact_ground_penalty_scale = -0.05
+
 
 class Turtlebot3ImageEnv(DirectRLEnv):
     # pre-physics step calls
@@ -568,10 +737,10 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.y_unit_tensor = torch.tensor([0, 1, 0], dtype=torch.float, device=self.device).repeat((self.num_envs, 1))
         self.z_unit_tensor = torch.tensor([0, 0, 1], dtype=torch.float, device=self.device).repeat((self.num_envs, 1))
 
-        self.joint_pos_names = ["joint.*", "gripper_.*"]
-        self.arm_names = ["joint.*"]
-        self.gripper_names = ["gripper_.*"]
-        self.wheel_names = ["wheel_.*"]
+        self.joint_pos_names = ["joint1", "joint2", "joint3", "joint4", "gripper_left_joint.*", "gripper_right_joint"]
+        self.arm_names = ["joint1", "joint2", "joint3", "joint4"]
+        self.gripper_names = ["gripper_left_joint.*", "gripper_right_joint"]
+        self.wheel_names = ["wheel_left_joint", "wheel_right_joint"]
         self.joint_pos_ids, _ = self._robot.find_joints(self.joint_pos_names, preserve_order=False)
         self.arm_ids, _ = self._robot.find_joints(self.arm_names, preserve_order=False)
         self.gripper_ids, _ = self._robot.find_joints(self.gripper_names, preserve_order=False)
@@ -582,9 +751,11 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.robot_gripper_targets = torch.zeros((self.num_envs, len(self.gripper_ids)), device=self.device)
         self.robot_wheel_targets = torch.zeros((self.num_envs, len(self.wheel_ids)), device=self.device)
 
-        self.current_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
-        self.previous_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
+        self.curr_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
+        self.prev_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
 
+        self.prev_cube_xy = torch.zeros((self.num_envs, 2), device=self.device)
+        
         # self.img_features = torch.nn.Sequential(
         #     *list(models.resnet18(weights=models.ResNet18_Weights.DEFAULT).children())[:-2]
         # ).eval().to(self.device)
@@ -604,7 +775,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
         # self.preprocess = models.EfficientNet_B0_Weights.DEFAULT.transforms()
 
-        # backgrounds_path = os.path.join(ASSET_ROOT, "omni.isaac.lab_assets/data/Backgrounds/4k_hdr_20")
+        # backgrounds_path = os.path.join(ASSET_ROOT, "isaaclab_assets/data/Backgrounds/4k_hdr_20")
 
         # file_names = [os.path.join(backgrounds_path, name) for name in os.listdir(backgrounds_path)]
 
@@ -623,10 +794,16 @@ class Turtlebot3ImageEnv(DirectRLEnv):
     def _setup_scene(self):
         # ロボットを初期化
         self._robot = Articulation(self.cfg.robot)
+        for i in range(self.num_envs):
+            path = f"/World/envs/env_{i}/Robot"
+            activate_contact_sensors(path)
         self._camera = TiledCamera(self.cfg.camera)
         self._contact_link4_base = ContactSensor(self.cfg.contact_link4_base)
+        self._contact_link5_base = ContactSensor(self.cfg.contact_link5_base)
         self._contact_leftgripper_object = ContactSensor(self.cfg.contact_leftgripper_object)
         self._contact_rightgripper_object = ContactSensor(self.cfg.contact_rightgripper_object)
+        self._contact_leftgripper_ground = ContactSensor(self.cfg.contact_leftgripper_ground)
+        self._contact_rightgripper_ground = ContactSensor(self.cfg.contact_rightgripper_ground)
         self._ee_frame = FrameTransformer(self.cfg.ee_frame)
         self._lee_frame = FrameTransformer(self.cfg.lee_frame)
         self._ree_frame = FrameTransformer(self.cfg.ree_frame)
@@ -638,8 +815,11 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.scene.articulations["robot"] = self._robot
         self.scene.sensors["camera"] = self._camera
         self.scene.sensors["contact_link4_base"] = self._contact_link4_base
+        self.scene.sensors["contact_link5_base"] = self._contact_link5_base
         self.scene.sensors["contact_leftgripper_object"] = self._contact_leftgripper_object
         self.scene.sensors["contact_rightgripper_object"] = self._contact_rightgripper_object
+        self.scene.sensors["contact_leftgripper_ground"] = self._contact_leftgripper_ground
+        self.scene.sensors["contact_rightgripper_ground"] = self._contact_rightgripper_ground
         self.scene.rigid_objects["cube"] = self._cube
         self.scene.sensors["ee_frame"] = self._ee_frame
         self.scene.sensors["lee_frame"] = self._lee_frame
@@ -665,6 +845,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
     # pre-physics step calls
 
     def _pre_physics_step(self, actions: torch.Tensor):
+        actions = torch.nan_to_num(actions, nan=0.0)
         arm_actions = actions[:, :len(self.arm_ids)].clone().clamp(-1.0, 1.0)
         gripper_action = actions[:, len(self.arm_ids)].clone().clamp(-1.0, 1.0) 
         wheel_actions = actions[:, len(self.arm_ids)+1:].clone().clamp(-1.0, 1.0)
@@ -679,21 +860,26 @@ class Turtlebot3ImageEnv(DirectRLEnv):
                                       self.robot_dof_lower_limits[self.gripper_ids[1]].item())
         self.robot_gripper_targets[:] = gripper_actions
 
-        # wheel_actions[:, 0] = torch.full_like(wheel_actions[:, 0], 0.0)
-        # wheel_actions[:, 1] = torch.full_like(wheel_actions[:, 1], 0.0)
+        # wheel_actions[:, 0] = torch.full_like(wheel_actions[:, 0], 1.0)
+        # wheel_actions[:, 1] = torch.full_like(wheel_actions[:, 1], 1.0)
         
-        self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
+        # self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
+        self.robot_wheel_targets[:] = self._robot.data.joint_pos[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids] * self.dt * wheel_actions
 
-        # self.robot_arm_targets = torch.tensor([[0.0, 1.4818, -0.6836, -0.7527]], device=self.device)
+        # if self.episode_length_buf % 2 == 0:
+        #     self.robot_arm_targets = torch.tensor([[0.0, -1.4, 1.4, 0.0]], device=self.device)
+        # else:
+        #     self.robot_arm_targets = torch.tensor([[0.0, -1.4, 1.35, 0.0]], device=self.device)
         # self.robot_gripper_targets = torch.tensor([[0.019, 0.019]], device=self.device)
 
-        self.current_actions = actions.clone().clamp(-1.0, 1.0)
+        self.curr_actions = actions
 
     def _apply_action(self):
         # 制御
         self._robot.set_joint_position_target(self.robot_arm_targets, self.arm_ids)
         self._robot.set_joint_position_target(self.robot_gripper_targets, self.gripper_ids)
-        self._robot.set_joint_velocity_target(self.robot_wheel_targets, self.wheel_ids)
+        # self._robot.set_joint_velocity_target(self.robot_wheel_targets, self.wheel_ids)
+        self._robot.set_joint_position_target(self.robot_wheel_targets, self.wheel_ids)
 
     # post-physics step calls
     
@@ -722,15 +908,19 @@ class Turtlebot3ImageEnv(DirectRLEnv):
             self.object_pos,
             # self.goal_pos,
             self.contact_link4_base,
+            self.contact_link5_base,
             self.contact_leftgripper_object,
             self.contact_rightgripper_object,
+            self.contact_leftgripper_ground,
+            self.contact_rightgripper_ground,
             self._robot.data.joint_pos,
             self.cfg.dist_reward_scale,
             self.cfg.catch_reward_scale,
             self.cfg.lift_reward_scale,
             self.cfg.dist_g_reward_scale,
             self.cfg.action_penalty_scale,
-            self.cfg.contact_penalty_scale,
+            self.cfg.self_collision_penalty_scale,
+            self.cfg.contact_ground_penalty_scale,
         )
 
     def _reset_idx(self, env_ids: torch.Tensor | None):
@@ -750,13 +940,14 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
         # initialize robot state
         joint_pos = self._robot.data.default_joint_pos[env_ids] + sample_uniform(
-            -0.25,
-            0.25,
+            -0.5,
+            0.5,
             (len(env_ids), self._robot.num_joints),
             self.device,
         )
         # joint_pos = torch.clamp(self._robot.data.default_joint_pos[env_ids], self.robot_dof_lower_limits, self.robot_dof_upper_limits)
         joint_pos = torch.clamp(joint_pos, self.robot_dof_lower_limits, self.robot_dof_upper_limits)
+        # joint_pos[:, self.arm_ids] = torch.tensor([[0.0, -1.4, 1.4, 0.0]], device=self.device)
         joint_vel = torch.zeros_like(joint_pos)
         default_robot_state = self._robot.data.default_root_state[env_ids].clone()
         default_robot_state[:, :3] += self.scene.env_origins[env_ids]
@@ -767,26 +958,65 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
         default_cube_state = self._cube.data.default_root_state[env_ids].clone()
         default_cube_state[:, :3] += self.scene.env_origins[env_ids]
-        default_cube_state[:, :3] += self.reset_root_state_uniform(
+        positions_delta, orientations_delta= self.reset_root_state_uniform(
             env_ids=env_ids,
-            # pose_range = {"x": (0.25, 0.35), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
+            # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
             # pose_range = {"x": (0.4, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01)},
-            pose_range = {"x": (0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01)},
+            pose_range={"x": (-0.5, 0.5), "y": (-0.5, 0.5), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
+            avoid_radius=0.2
         )
+        default_cube_state[:, :3] += positions_delta
+        default_cube_state[:, 3:7] = math_utils.quat_mul(default_cube_state[:, 3:7], orientations_delta)
         self._cube.write_root_link_pose_to_sim(default_cube_state[:, :7], env_ids=env_ids)
+        self.curr_actions[env_ids] = 0.0
+        self.prev_actions[env_ids] = 0.0
+        self.prev_cube_xy[env_ids] = default_cube_state[:, :2]
         # Need to refresh the intermediate values so that _get_observations() can use the latest values
         self._compute_intermediate_values(env_ids)
 
-    def reset_root_state_uniform(self, env_ids, pose_range):
-
-        # poses
-        range_list = [pose_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
+    def reset_root_state_uniform(
+        self,
+        env_ids,
+        pose_range,
+        avoid_radius: float | None = None,
+    ):
+        keys = ["x", "y", "z", "roll", "pitch", "yaw"]
+        range_list = [pose_range.get(k, (0.0, 0.0)) for k in keys]
         ranges = torch.tensor(range_list, device=self.device)
-        rand_samples = math_utils.sample_uniform(ranges[:, 0], ranges[:, 1], (len(env_ids), 6), device=self.device)
 
-        positions = rand_samples[:, 0:3]
+        num_envs = len(env_ids)
+        rand_samples = math_utils.sample_uniform(
+            ranges[:, 0], ranges[:, 1], (num_envs, 6), device=self.device
+        )
 
-        return positions
+        # ---- 円内チェック → 必要なら xy を引き直し ------------------------------
+        if avoid_radius is not None and avoid_radius > 0.0:
+            # pos_delta の view。あとでまとめて z / 回転を計算するので OK
+            xy = rand_samples[:, 0:2]
+
+            # 距離判定マスク
+            in_circle = (xy[:, 0] ** 2 + xy[:, 1] ** 2) <= avoid_radius ** 2
+
+            # 円に入ったぶんだけ resample（必要なくなるまで繰り返し）
+            while in_circle.any():
+                n_resample = int(in_circle.sum().item())
+                # 0:x, 1:y だけ取り出して再サンプル
+                xy_new = math_utils.sample_uniform(
+                    ranges[0:2, 0], ranges[0:2, 1], (n_resample, 2), device=self.device
+                )
+                xy[in_circle] = xy_new
+                # マスク更新
+                in_circle = (xy[:, 0] ** 2 + xy[:, 1] ** 2) <= avoid_radius ** 2
+
+            # xy を上書き済みなので rand_samples は更新済み
+
+        # ---- tensor を分解して返却 ---------------------------------------------
+        positions_delta = rand_samples[:, 0:3]
+        orientations_delta = math_utils.quat_from_euler_xyz(
+            rand_samples[:, 3], rand_samples[:, 4], rand_samples[:, 5]
+        )
+
+        return positions_delta, orientations_delta
 
     def _get_observations(self) -> dict:
 
@@ -827,22 +1057,28 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
         joint_pos = self._robot.data.joint_pos[:, self.joint_pos_ids]
         joint_vel = self._robot.data.joint_vel[:, self.wheel_ids]
-        # print(joint_vel)
         # joint_pos = 2 * (self._robot.data.joint_pos[:, self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids]) / (self.robot_dof_upper_limits[self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids]) - 1.0
         # joint_vel = 2 * (self._robot.data.joint_vel[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids]) / (2*self.robot_dof_vel_limits_tensor[self.wheel_ids]) - 1.0
         # joint_pos = (self._robot.data.joint_pos[:, self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids]) / (self.robot_dof_upper_limits[self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids])
         # joint_vel = (self._robot.data.joint_vel[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids]) / (2*self.robot_dof_vel_limits_tensor[self.wheel_ids])
         # print(joint_pos)
+
+        object_pos_b, object_rot_b = math_utils.subtract_frame_transforms(
+            self.base_pos, self.base_rot, self.cube_pos, self.cube_rot
+        )
+        object_b = torch.cat((object_pos_b, object_rot_b), dim=1)
+
         obs = {
             "joint": torch.cat(
                 (
                     joint_pos,
-                    joint_vel,
-                    # self.current_actions,
+                    # joint_vel,
                 ),
                 dim=-1,
             ),
             "rgb": rgb,
+            "object": object_b,
+            "actions": self.curr_actions,
         }
 
         return obs
@@ -856,13 +1092,17 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.base_pos = self._robot.data.root_link_state_w[env_ids, :3]
         self.base_rot = self._robot.data.root_link_state_w[env_ids, 3:7]
         self.cube_pos = self._cube.data.root_link_pos_w[env_ids, :]
+        self.cube_rot = self._cube.data.root_link_state_w[env_ids, 3:7]
         self.ee_pos = self._ee_frame.data.target_pos_w[env_ids, 0, :]
         self.lee_pos = self._lee_frame.data.target_pos_w[env_ids, 0, :]
         self.ree_pos = self._ree_frame.data.target_pos_w[env_ids, 0, :]
         self.object_pos = self._object_frame.data.target_pos_w[env_ids, 0, :]
         self.contact_link4_base = self._contact_link4_base.data.force_matrix_w[env_ids, :]
+        self.contact_link5_base = self._contact_link5_base.data.force_matrix_w[env_ids, :]
         self.contact_leftgripper_object = self._contact_leftgripper_object.data.force_matrix_w[env_ids, :]
         self.contact_rightgripper_object = self._contact_rightgripper_object.data.force_matrix_w[env_ids, :]
+        self.contact_leftgripper_ground = self._contact_leftgripper_ground.data.force_matrix_w[env_ids, :]
+        self.contact_rightgripper_ground = self._contact_rightgripper_ground.data.force_matrix_w[env_ids, :]
 
     def _compute_rewards(
         self,
@@ -873,48 +1113,67 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         object_pos,
         # goal_pos,
         contact_link4_base,
+        contact_link5_base,
         contact_leftgripper_object,
         contact_rightgripper_object,
+        contact_leftgripper_ground,
+        contact_rightgripper_ground,
         joint_positions,
         dist_reward_scale,
         catch_reward_scale,
         lift_reward_scale,
         dist_g_reward_scale,
         action_penalty_scale,
-        contact_penalty_scale,
+        self_collision_penalty_scale,
+        contact_ground_penalty_scale
     ):
+        
+        # print(1111111111111111)
+        # print(self.actions_buf.buffer.shape)
+        # print(self.actions_buf.buffer[0])
+        # print(self.actions_buf.buffer[-1])
         d_c = torch.norm(object_pos-end_effector_pos, dim=-1)
         d_l = torch.norm(object_pos-left_tip_pos, dim=-1)
         d_r = torch.norm(object_pos-right_tip_pos, dim=-1)
-        d = (d_c + d_l + d_r) / 3
+        d = (d_c*2 + d_l + d_r) / 4
         # dis_reward = torch.exp(-10*d_c)
         # dis_reward = torch.where(d_c >= 0.02,
         #                  torch.exp(-10*d_c),   # 条件を満たす場合
         #                  1.25 * torch.exp(-10*d))     # それ以外の場合
         # dis_reward = 1 - torch.tanh(10*d)
         dis_reward = torch.exp(-10*d)
+        # dis_reward = torch.where(inside_radius, dis_reward, torch.zeros_like(dis_reward))
         # print(d_c)
 
         catch_object = torch.norm(contact_leftgripper_object, dim=-1).squeeze() * torch.norm(contact_rightgripper_object, dim=-1).squeeze() > 1.0
-        # lift_reward = (1 - torch.exp(-100*(cube_pos[:, 2]-0.1/2))) * contact_object
-        lift_reward = torch.where(cube_pos[:, 2] > 0.04, 1.0, 0.0) * catch_object
+        lift_reward = torch.where(cube_pos[:, 2] > 0.03, 1.0, 0.0) * catch_object
         # lift_reward = torch.where(cube_pos[:, 2] > 0.10, 1.0, 0.0) * torch.where(dis < 0.03, 1.0, 0.0)
         # lift_reward = (cube_pos[:, 2] - 0.025/2) > 0.04
 
-        # actions_penalty = self.action_rate_l2_ratio()
+        actions_penalty = self.action_rate_l2_ratio()
         # dis_g = torch.norm(goal_pos-cube_pos, dim=-1)
         # dis_g_reward = torch.exp(-10*dis_g)
 
-        contact_penalty = torch.norm(contact_link4_base, dim=-1).squeeze() > 1.0
+        contact_4_penalty = torch.norm(contact_link4_base, dim=-1).squeeze() > 1.0
+        contact_5_penalty = torch.norm(contact_link5_base, dim=-1).squeeze() > 1.0
+        self_collision_penalty = contact_4_penalty | contact_5_penalty
+
+        contact_left_ground_penalty = torch.norm(contact_leftgripper_ground, dim=-1).squeeze() > 1.0
+        contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 1.0
+        contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
 
         rewards = (
             dist_reward_scale * dis_reward
             # + catch_reward_scale * catch_object
             + lift_reward_scale * lift_reward
-            + contact_penalty_scale * contact_penalty
-            # + action_penalty_scale * actions_penalty
+            + self_collision_penalty_scale * self_collision_penalty
+            + contact_ground_penalty_scale * contact_ground_penalty
+            + action_penalty_scale * actions_penalty
             # + dist_g_reward_scale * dis_g_reward
         )
+
+        # print(self_collision_penalty * self_collision_penalty_scale)
+        # print(contact_ground_penalty * contact_ground_penalty_scale)
 
         # print(111111111111111111111111111111111)
         # print(dis_reward)
@@ -933,9 +1192,9 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         return rewards
     
     def action_rate_l2_ratio(self) -> torch.Tensor:
-        rate_of_change = (self.current_actions - self.previous_actions) / 2.0
-        self.previous_actions = self.current_actions.clone()        
-        return -torch.mean(torch.square(rate_of_change), dim=1)
+        rate_of_change = (self.curr_actions - self.prev_actions) / 2.0
+        self.prev_actions = self.curr_actions        
+        return torch.mean(torch.abs(rate_of_change), dim=1)
 
 @torch.jit.script
 def randomize_rotation(rand0, rand1, x_unit_tensor, y_unit_tensor):
