@@ -1160,6 +1160,7 @@ class randomize_dome_light(ManagerTermBase):
         light_paths = cfg.params.get("light_paths")
         event_name = cfg.params.get("event_name")
         light_rotation = cfg.params.get("light_rotation", (0.0, 0.0))
+        light_intensity = cfg.params.get("light_intensity", (1000.0, 1000.0))
 
         # check to make sure replicate_physics is set to False, else raise error
         # note: We add an explicit check here since texture randomization can happen outside of 'prestartup' mode
@@ -1194,7 +1195,8 @@ class randomize_dome_light(ManagerTermBase):
             light = rep.create.light(
                 light_type="Dome",
                 rotation=rep.distribution.uniform(*light_rotation),
-                texture=rep.distribution.choice(light_paths)
+                intensity=rep.distribution.uniform(*light_intensity),
+                texture=rep.distribution.choice(light_paths),
             )
             return light.node
 
@@ -1210,6 +1212,7 @@ class randomize_dome_light(ManagerTermBase):
         event_name: str,
         light_paths: list[str],
         light_rotation: tuple[float, float] = (0.0, 0.0),
+        light_intensity: tuple[float, float] = (1000.0, 1000.0),
     ):
         # import replicator
         import omni.replicator.core as rep
