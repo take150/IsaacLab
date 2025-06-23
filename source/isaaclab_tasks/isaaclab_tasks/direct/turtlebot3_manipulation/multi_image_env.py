@@ -378,8 +378,8 @@ class Turtlebot3MultiImageEnvCfg(DirectMARLEnvCfg):
                 joint_names_expr=["joint[1-4]"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.2,
-                stiffness=50.0,
-                damping=2.5,
+                stiffness=80.0,
+                damping=4.0,
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
@@ -398,7 +398,7 @@ class Turtlebot3MultiImageEnvCfg(DirectMARLEnvCfg):
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
                 effort_limit_sim=4.1,
-                velocity_limit_sim=1.0,
+                velocity_limit_sim=0.8,
                 stiffness=0.0,
                 damping=6.0,
             ),
