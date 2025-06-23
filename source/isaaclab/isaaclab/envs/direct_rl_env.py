@@ -350,16 +350,22 @@ class DirectRLEnv(gym.Env):
         """
         action = action.to(self.device)
         # add action noise
-        if self.cfg.action_noise_model:
-            # action = self._action_noise_model.apply(action)
-            action[:, 0] = self._action_noise_model_joint1.apply(action[:, 0])
-            action[:, 1] = self._action_noise_model_joint2.apply(action[:, 1])
-            action[:, 2] = self._action_noise_model_joint3.apply(action[:, 2])
-            action[:, 3] = self._action_noise_model_joint4.apply(action[:, 3])
-            action[:, -2:] = self._action_noise_model_wheel.apply(action[:, -2:])
+        # if self.cfg.action_noise_model:
+        #     # action = self._action_noise_model.apply(action)
+        #     action[:, 0] = self._action_noise_model_joint1.apply(action[:, 0])
+        #     action[:, 1] = self._action_noise_model_joint2.apply(action[:, 1])
+        #     action[:, 2] = self._action_noise_model_joint3.apply(action[:, 2])
+        #     action[:, 3] = self._action_noise_model_joint4.apply(action[:, 3])
+        #     action[:, -2:] = self._action_noise_model_wheel.apply(action[:, -2:])
 
         # process actions
         self._pre_physics_step(action)
+
+        if self.cfg.action_noise_model:
+            self.robot_arm_targets[:, 0] = self._action_noise_model_joint1.apply(self.robot_arm_targets[:, 0])
+            self.robot_arm_targets[:, 1] = self._action_noise_model_joint2.apply(self.robot_arm_targets[:, 1])
+            self.robot_arm_targets[:, 2] = self._action_noise_model_joint3.apply(self.robot_arm_targets[:, 2])
+            self.robot_arm_targets[:, 3] = self._action_noise_model_joint4.apply(self.robot_arm_targets[:, 3])
 
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop

@@ -15,7 +15,9 @@ import math
 import os
 from typing import Tuple
 
+import omni.kit.commands
 import isaacsim.core.utils.prims as prims_utils
+from isaacsim.core.prims import XFormPrim
 from isaacsim.core.utils.stage import get_current_stage
 from isaacsim.core.utils.torch.transformations import tf_combine, tf_inverse, tf_vector
 from pxr import UsdGeom
@@ -25,7 +27,7 @@ import isaaclab.envs.mdp as mdp
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.actuators.actuator_cfg import ImplicitActuatorCfg, IdealPDActuatorCfg, DelayedPDActuatorCfg
-from isaaclab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
+from isaaclab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg, AssetBaseCfg
 from isaaclab.envs import DirectRLEnv, DirectRLEnvCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
@@ -60,7 +62,7 @@ class EventCfg:
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_left_link"),
           "static_friction_range": (0.005, 0.03),
           "dynamic_friction_range": (0.005, 0.02),
-          "restitution_range": (0.5, 0.5),
+          "restitution_range": (0.0, 0.0),
           "num_buckets": 1,
       },
     )
@@ -72,7 +74,7 @@ class EventCfg:
           "asset_cfg": SceneEntityCfg("robot", body_names="caster_back_right_link"),
           "static_friction_range": (0.005, 0.03),
           "dynamic_friction_range": (0.005, 0.02),
-          "restitution_range": (0.5, 0.5),
+          "restitution_range": (0.0, 0.0),
           "num_buckets": 1,
       },
     )
@@ -82,9 +84,9 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_left_link"),
-          "static_friction_range": (0.4, 0.6),
-          "dynamic_friction_range": (0.3, 0.4),
-          "restitution_range": (0.5, 0.5),
+          "static_friction_range": (0.7, 0.9),
+          "dynamic_friction_range": (0.6, 0.7),
+          "restitution_range": (0.0, 0.0),
           "num_buckets": 1,
       },
     )
@@ -94,9 +96,9 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("robot", body_names="wheel_right_link"),
-          "static_friction_range": (0.4, 0.6),
-          "dynamic_friction_range": (0.3, 0.4),
-          "restitution_range": (0.5, 0.5),
+          "static_friction_range": (0.7, 0.9),
+          "dynamic_friction_range": (0.6, 0.7),
+          "restitution_range": (0.0, 0.0),
           "num_buckets": 1,
       },
     )
@@ -137,17 +139,17 @@ class EventCfg:
       },
     )
 
-    randomize_terrain_friction = EventTerm(
-        func=mdp.randomize_rigid_body_material,
-        mode="reset",
-        params={
-          "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground"),
-          "static_friction_range": (0.4, 0.6),
-          "dynamic_friction_range": (0.25, 0.45),
-          "restitution_range": (0.8, 0.8),
-          "num_buckets": 1,
-      },
-    )
+    # randomize_terrain_friction = EventTerm(
+    #     func=mdp.randomize_rigid_body_material,
+    #     mode="reset",
+    #     params={
+    #       "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground"),
+    #       "static_friction_range": (0.7, 0.9),
+    #       "dynamic_friction_range": (0.55, 0.75),
+    #       "restitution_range": (0.2, 0.2),
+    #       "num_buckets": 1,
+    #   },
+    # )
 
     randomize_object_color = EventTerm(
         func=mdp.randomize_visual_color,
@@ -170,7 +172,7 @@ class EventCfg:
         is_global_time=True,
         params={
             "event_name": "randomize_terrain_color",
-            "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground"),
+            "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground_color"),
             "colors":  {"r": (0.3, 0.6), "g": (0.3, 0.6), "b": (0.3, 0.6)},
             # "colors": [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
             # "colors": [(1.0, 0.0, 0.0)]
@@ -224,7 +226,7 @@ class EventCfg:
 class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # env
     episode_length_s = 50.01  # 160 timesteps
-    decimation = 5
+    decimation = 25
     state_space = 0
     seed = 42
 
@@ -296,15 +298,15 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
             # ),
             "turtlebot3_arm": ImplicitActuatorCfg(
                 joint_names_expr=["joint[1-4]"],
-                effort_limit=4.1,
-                velocity_limit=0.02,
+                effort_limit_sim=4.1,
+                velocity_limit_sim=0.2,
                 stiffness=80.0,
                 damping=4.0,
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
-                effort_limit=4.1,
-                velocity_limit=0.02,
+                effort_limit_sim=4.1,
+                velocity_limit_sim=0.02,
                 stiffness=2000.0,
                 damping=100.0,
             ),
@@ -317,10 +319,10 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
             # ),
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
-                effort_limit=4.1,
-                velocity_limit=0.2,
+                effort_limit_sim=4.1,
+                velocity_limit_sim=0.8,
                 stiffness=0.0,
-                damping=0.5,
+                damping=6.0,
             ),
             # "turtlebot3_arm": DelayedImplicitActuatorCfg(
             #     joint_names_expr=["joint[1-4]"],
@@ -386,6 +388,20 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
 
     contact_link5_base: ContactSensorCfg = ContactSensorCfg(
         prim_path="/World/envs/env_.*/Robot/link5",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/Robot/base_link"],
+    )
+
+    contact_leftgripper_base: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/gripper_left_link",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=["/World/envs/env_.*/Robot/base_link"],
+    )
+
+    contact_rightgripper_base: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/Robot/gripper_right_link",
         update_period=0.0,
         history_length=0,
         filter_prim_paths_expr=["/World/envs/env_.*/Robot/base_link"],
@@ -495,7 +511,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     # )
 
     ground_plane: RigidObjectCfg = RigidObjectCfg(
-        prim_path="/World/envs/env_.*/ground",
+        prim_path="/World/envs/env_.*/ground_color",
         spawn=sim_utils.MultiAssetSpawnerCfg(
             assets_cfg=[
                 sim_utils.CuboidCfg(
@@ -525,46 +541,46 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
             ],
             random_choice=False,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                    solver_position_iteration_count=16,
-                    solver_velocity_iteration_count=1,
-                    max_angular_velocity=1000.0,
-                    max_linear_velocity=1000.0,
-                    max_depenetration_velocity=5.0,
+                    # rigid_body_enabled=False,
                     disable_gravity=False,
                     kinematic_enabled=True,
                 ),
             mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
-            collision_props=sim_utils.CollisionPropertiesCfg(),
+            collision_props=sim_utils.CollisionPropertiesCfg(
+                    collision_enabled=False
+                ),
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, -0.005), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
+
+    terrain = TerrainImporterCfg(
+        prim_path="/World/ground",
+        terrain_type="plane",
+        collision_group=-1,
+        physics_material=sim_utils.RigidBodyMaterialCfg(
+            friction_combine_mode="multiply",
+            restitution_combine_mode="multiply",
+            static_friction=1.0,
+            dynamic_friction=1.0,
+            # restitution=0.5,
+        ),
     )
 
     contact_leftgripper_ground: ContactSensorCfg = ContactSensorCfg(
         prim_path="/World/envs/env_.*/Robot/gripper_left_link",
         update_period=0.0,
         history_length=0,
-        filter_prim_paths_expr=["/World/envs/env_.*/ground"],
+        filter_prim_paths_expr=["/World/ground"],
+        # filter_prim_paths_expr=["/World/envs/env_.*/ground"],
     )
 
     contact_rightgripper_ground: ContactSensorCfg = ContactSensorCfg(
         prim_path="/World/envs/env_.*/Robot/gripper_right_link",
         update_period=0.0,
         history_length=0,
-        filter_prim_paths_expr=["/World/envs/env_.*/ground"],
+        filter_prim_paths_expr=["/World/ground"],
+        # filter_prim_paths_expr=["/World/envs/env_.*/ground"],
     )
-
-    # terrain = TerrainImporterCfg(
-    #     prim_path="/World/ground",
-    #     terrain_type="plane",
-    #     collision_group=-1,
-    #     physics_material=sim_utils.RigidBodyMaterialCfg(
-    #         friction_combine_mode="multiply",
-    #         restitution_combine_mode="multiply",
-    #         static_friction=1.0,
-    #         dynamic_friction=1.0,
-    #         restitution=0.8,
-    #     ),
-    # )
 
     marker_cfg = FRAME_MARKER_CFG.copy()
     marker_cfg.markers["frame"].scale = (0.1, 0.1, 0.1)
@@ -694,7 +710,7 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     dist_reward_scale = 1.0
     catch_reward_scale = 0.5
     lift_reward_scale = 1.0
-    action_penalty_scale = -0.1
+    action_penalty_scale = -0.2
     dist_g_reward_scale = 1.0
     self_collision_penalty_scale = -0.5
     contact_ground_penalty_scale = -0.05
@@ -800,6 +816,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self._camera = TiledCamera(self.cfg.camera)
         self._contact_link4_base = ContactSensor(self.cfg.contact_link4_base)
         self._contact_link5_base = ContactSensor(self.cfg.contact_link5_base)
+        self._contact_leftgripper_base = ContactSensor(self.cfg.contact_leftgripper_base)
+        self._contact_rightgripper_base = ContactSensor(self.cfg.contact_rightgripper_base)
         self._contact_leftgripper_object = ContactSensor(self.cfg.contact_leftgripper_object)
         self._contact_rightgripper_object = ContactSensor(self.cfg.contact_rightgripper_object)
         self._contact_leftgripper_ground = ContactSensor(self.cfg.contact_leftgripper_ground)
@@ -810,12 +828,17 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self._cube = RigidObject(self.cfg.cube)
         self._object_frame = FrameTransformer(self.cfg.object_frame)
         self._ground_plane = RigidObject(self.cfg.ground_plane)
+        # self.cfg.ground_plane.spawn.func(
+        #     self.cfg.ground_plane.prim_path, self.cfg.ground_plane.spawn, translation=self.cfg.ground_plane.init_state.pos, orientation=self.cfg.ground_plane.init_state.rot,
+        # )
         # self.goal_markers = VisualizationMarkers(self.cfg.goal)
         # ロボットをシーンに追加
         self.scene.articulations["robot"] = self._robot
         self.scene.sensors["camera"] = self._camera
         self.scene.sensors["contact_link4_base"] = self._contact_link4_base
         self.scene.sensors["contact_link5_base"] = self._contact_link5_base
+        self.scene.sensors["contact_leftgripper_base"] = self._contact_leftgripper_base
+        self.scene.sensors["contact_rightgripper_base"] = self._contact_rightgripper_base
         self.scene.sensors["contact_leftgripper_object"] = self._contact_leftgripper_object
         self.scene.sensors["contact_rightgripper_object"] = self._contact_rightgripper_object
         self.scene.sensors["contact_leftgripper_ground"] = self._contact_leftgripper_ground
@@ -826,17 +849,23 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.scene.sensors["ree_frame"] = self._ree_frame
         self.scene.sensors["object_frame"] = self._object_frame
         self.scene.rigid_objects["ground_plane"] = self._ground_plane
+        # self.scene.extras["ground_plane"] = XFormPrim(self.cfg.ground_plane.prim_path, reset_xform_properties=False)
     
         # 地形の準備
-        # self.cfg.terrain.num_envs = self.scene.cfg.num_envs
-        # self.cfg.terrain.env_spacing = self.scene.cfg.env_spacing
-        # self._terrain = self.cfg.terrain.class_type(self.cfg.terrain)
+        self.cfg.terrain.num_envs = self.scene.cfg.num_envs
+        self.cfg.terrain.env_spacing = self.scene.cfg.env_spacing
+        self._terrain = self.cfg.terrain.class_type(self.cfg.terrain)
 
         # 元のシーンを複製
         self.scene.clone_environments(copy_from_source=False)
         # 特定のオブジェクト間での衝突を無効化
-        # self.scene.filter_collisions(global_prim_paths=[self.cfg.terrain.prim_path])
-        self.scene.filter_collisions()
+        self.scene.filter_collisions(global_prim_paths=[self.cfg.terrain.prim_path])
+        # self.scene.filter_collisions()
+
+        omni.kit.commands.execute(
+            "ToggleVisibilitySelectedPrims",
+            selected_paths=["/World/ground"]   # ←ステージ上の床 Prim のパス
+        )
 
         # 証明を追加
         # light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
@@ -860,16 +889,13 @@ class Turtlebot3ImageEnv(DirectRLEnv):
                                       self.robot_dof_lower_limits[self.gripper_ids[1]].item())
         self.robot_gripper_targets[:] = gripper_actions
 
-        # wheel_actions[:, 0] = torch.full_like(wheel_actions[:, 0], 1.0)
-        # wheel_actions[:, 1] = torch.full_like(wheel_actions[:, 1], 1.0)
+        # wheel_actions[:, 0] = torch.full_like(wheel_actions[:, 0], 0.0)
+        # wheel_actions[:, 1] = torch.full_like(wheel_actions[:, 1], 0.0)
         
-        # self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
-        self.robot_wheel_targets[:] = self._robot.data.joint_pos[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids] * self.dt * wheel_actions
+        self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
+        # self.robot_wheel_targets[:] = self._robot.data.joint_pos[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids] * self.dt * wheel_actions
 
-        # if self.episode_length_buf % 2 == 0:
-        #     self.robot_arm_targets = torch.tensor([[0.0, -1.4, 1.4, 0.0]], device=self.device)
-        # else:
-        #     self.robot_arm_targets = torch.tensor([[0.0, -1.4, 1.35, 0.0]], device=self.device)
+        # self.robot_arm_targets = torch.tensor([[0.0, 1.47, -0.83, -0.54]], device=self.device)
         # self.robot_gripper_targets = torch.tensor([[0.019, 0.019]], device=self.device)
 
         self.curr_actions = actions
@@ -878,8 +904,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         # 制御
         self._robot.set_joint_position_target(self.robot_arm_targets, self.arm_ids)
         self._robot.set_joint_position_target(self.robot_gripper_targets, self.gripper_ids)
-        # self._robot.set_joint_velocity_target(self.robot_wheel_targets, self.wheel_ids)
-        self._robot.set_joint_position_target(self.robot_wheel_targets, self.wheel_ids)
+        self._robot.set_joint_velocity_target(self.robot_wheel_targets, self.wheel_ids)
+        # self._robot.set_joint_position_target(self.robot_wheel_targets, self.wheel_ids)
 
     # post-physics step calls
     
@@ -909,6 +935,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
             # self.goal_pos,
             self.contact_link4_base,
             self.contact_link5_base,
+            self.contact_leftgripper_base,
+            self.contact_rightgripper_base,
             self.contact_leftgripper_object,
             self.contact_rightgripper_object,
             self.contact_leftgripper_ground,
@@ -962,7 +990,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
             env_ids=env_ids,
             # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
             # pose_range = {"x": (0.4, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01)},
-            pose_range={"x": (-0.5, 0.5), "y": (-0.5, 0.5), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
+            pose_range={"x": (-0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
             avoid_radius=0.2
         )
         default_cube_state[:, :3] += positions_delta
@@ -1061,7 +1089,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         # joint_vel = 2 * (self._robot.data.joint_vel[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids]) / (2*self.robot_dof_vel_limits_tensor[self.wheel_ids]) - 1.0
         # joint_pos = (self._robot.data.joint_pos[:, self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids]) / (self.robot_dof_upper_limits[self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids])
         # joint_vel = (self._robot.data.joint_vel[:, self.wheel_ids] + self.robot_dof_vel_limits_tensor[self.wheel_ids]) / (2*self.robot_dof_vel_limits_tensor[self.wheel_ids])
-        # print(joint_pos)
+        print(joint_pos)
 
         object_pos_b, object_rot_b = math_utils.subtract_frame_transforms(
             self.base_pos, self.base_rot, self.cube_pos, self.cube_rot
@@ -1099,6 +1127,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.object_pos = self._object_frame.data.target_pos_w[env_ids, 0, :]
         self.contact_link4_base = self._contact_link4_base.data.force_matrix_w[env_ids, :]
         self.contact_link5_base = self._contact_link5_base.data.force_matrix_w[env_ids, :]
+        self.contact_leftgripper_base = self._contact_leftgripper_base.data.force_matrix_w[env_ids, :]
+        self.contact_rightgripper_base = self._contact_rightgripper_base.data.force_matrix_w[env_ids, :]
         self.contact_leftgripper_object = self._contact_leftgripper_object.data.force_matrix_w[env_ids, :]
         self.contact_rightgripper_object = self._contact_rightgripper_object.data.force_matrix_w[env_ids, :]
         self.contact_leftgripper_ground = self._contact_leftgripper_ground.data.force_matrix_w[env_ids, :]
@@ -1114,6 +1144,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         # goal_pos,
         contact_link4_base,
         contact_link5_base,
+        contact_leftgripper_base,
+        contact_rightgripper_base,
         contact_leftgripper_object,
         contact_rightgripper_object,
         contact_leftgripper_ground,
@@ -1156,11 +1188,15 @@ class Turtlebot3ImageEnv(DirectRLEnv):
 
         contact_4_penalty = torch.norm(contact_link4_base, dim=-1).squeeze() > 1.0
         contact_5_penalty = torch.norm(contact_link5_base, dim=-1).squeeze() > 1.0
-        self_collision_penalty = contact_4_penalty | contact_5_penalty
+        contact_left_base_penalty = torch.norm(contact_leftgripper_base, dim=-1).squeeze() > 1.0
+        contact_right_base_penalty = torch.norm(contact_rightgripper_base, dim=-1).squeeze() > 1.0
+        self_collision_penalty = contact_4_penalty | contact_5_penalty | contact_left_base_penalty | contact_right_base_penalty
 
         contact_left_ground_penalty = torch.norm(contact_leftgripper_ground, dim=-1).squeeze() > 1.0
         contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 1.0
         contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
+
+        # print(self_collision_penalty)
 
         rewards = (
             dist_reward_scale * dis_reward
