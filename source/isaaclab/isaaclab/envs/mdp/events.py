@@ -1248,19 +1248,32 @@ class randomize_dome_light(ManagerTermBase):
             light_rotation = (angle_deg, angle_deg, angle_deg)
 
         # Create the omni-graph node for the randomization term
-        def rep_dome_light_randomization():
-            light = rep.create.light(
-                light_type="Dome",
-                rotation=rep.distribution.uniform(*light_rotation),
-                texture=rep.distribution.choice(light_paths),
-                intensity=1000.0
+        # def rep_dome_light_randomization():
+        #     light = rep.create.light(
+        #         light_type="Dome",
+        #         rotation=rep.distribution.uniform(*light_rotation),
+        #         texture=rep.distribution.choice(light_paths),
+        #         intensity=1000.0
                 
-            )
-            return light.node
+        #     )
+        #     return light.node
 
         # Register the event to the replicator
+        # with rep.trigger.on_custom_event(event_name=event_name):
+        #     rep_dome_light_randomization()
+
+        self._light = rep.create.light(
+            light_type="Dome",
+            texture=light_paths[0]  # <- 初期テクスチャとしてリストの最初の要素を指定
+        )
+        
         with rep.trigger.on_custom_event(event_name=event_name):
-            rep_dome_light_randomization()
+            with self._light:
+                rep.modify.attribute("inputs:texture:file", rep.distribution.choice(light_paths))
+                rep.modify.pose(
+                    rotation=rep.distribution.uniform(*light_rotation)
+                )
+                rep.modify.attribute("intensity", 1000.0)
 
 
     def __call__(

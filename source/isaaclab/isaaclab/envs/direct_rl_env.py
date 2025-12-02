@@ -220,7 +220,6 @@ class DirectRLEnv(gym.Env):
             self._observation_noise_model_joint4: NoiseModel = self.cfg.observation_noise_model_joint4.class_type(
                 self.cfg.observation_noise_model_joint4, num_envs=self.num_envs, device=self.device
             )
-
             self._observation_noise_model_rgb: NoiseModel = self.cfg.observation_noise_model_rgb.class_type(
                 self.cfg.observation_noise_model_rgb, num_envs=self.num_envs, device=self.device
             )

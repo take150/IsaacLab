@@ -25,122 +25,13 @@ gym.register(
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_reach_ppo_cfg.yaml",
     },
 )
-gym.register(
-    id="Isaac-Turtlebot3-Move-Direct-v0",
-    entry_point=f"{__name__}.move_env_v0:Turtlebot3MoveEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.move_env_v0:Turtlebot3MoveEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Move-Direct-v1",
-    entry_point=f"{__name__}.move_env_v1:Turtlebot3MoveEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.move_env_v1:Turtlebot3MoveEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Multi-Move-Direct-v0",
-    entry_point=f"{__name__}.multi_move_env:Turtlebot3MultiMoveEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.multi_move_env:Turtlebot3MultiMoveEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
-        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
-        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Image-Direct-v0",
-    entry_point=f"{__name__}.image_env_v0:Turtlebot3ImageEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v0:Turtlebot3ImageEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Image-Direct-v1",
-    entry_point=f"{__name__}.image_env_v1:Turtlebot3ImageEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v1:Turtlebot3ImageEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Image-Direct-v2",
-    entry_point=f"{__name__}.image_env_v2:Turtlebot3ImageEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v2:Turtlebot3ImageEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Image-Direct-v3",
-    entry_point=f"{__name__}.image_env_v3:Turtlebot3ImageEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v3:Turtlebot3ImageEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Image-Direct-v4",
-    entry_point=f"{__name__}.image_env_v4:Turtlebot3ImageEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v4:Turtlebot3ImageEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
-    },
-)
-
-gym.register(
-    id="Isaac-Turtlebot3-Image-Direct-v5",
-    entry_point=f"{__name__}.image_env_v5:Turtlebot3ImageEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v5:Turtlebot3ImageEnvCfg",
-        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
-        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
-        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
-    },
-)
 
 gym.register(
     id="Isaac-Turtlebot3-Image-Direct-v6",
-    entry_point=f"{__name__}.image_env_v6:Turtlebot3ImageEnv",
+    entry_point=f"{__name__}.image_env:Turtlebot3ImageEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.image_env_v6:Turtlebot3ImageEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.image_env:Turtlebot3ImageEnvCfg",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_image_ppo_cfg.yaml",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
@@ -158,5 +49,89 @@ gym.register(
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
         "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
         "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_image_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Multi-Place-Direct-v0",
+    entry_point=f"{__name__}.multi_place_env:Turtlebot3MultiPlaceEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.multi_place_env:Turtlebot3MultiPlaceEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_image_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_image_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Single-Direct-v0",
+    entry_point=f"{__name__}.single_env:Turtlebot3SingleEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.single_env:Turtlebot3SingleEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Single-Distillation-Direct-v0",
+    entry_point=f"{__name__}.single_distillation_env:Turtlebot3SingleDistillationEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.single_distillation_env:Turtlebot3SingleDistillationEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Multi-Direct-v0",
+    entry_point=f"{__name__}.multi_env:Turtlebot3MultiEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.multi_env:Turtlebot3MultiEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Multi-Distillation-Direct-v0",
+    entry_point=f"{__name__}.multi_distillation_env:Turtlebot3MultiDistillationEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.multi_distillation_env:Turtlebot3MultiDistillationEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Single-Place-Direct-v0",
+    entry_point=f"{__name__}.single_place_env:Turtlebot3SinglePlaceEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.single_place_env:Turtlebot3SinglePlaceEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
     },
 )

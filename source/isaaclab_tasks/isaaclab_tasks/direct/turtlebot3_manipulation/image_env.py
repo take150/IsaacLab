@@ -248,9 +248,9 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
         spawn=sim_utils.MultiUsdFileCfg(
             usd_path=[
                 os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_00.usd"),
-                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_01.usd"),
-                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_02.usd"),
-                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_03.usd"),
+                # os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_01.usd"),
+                # os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_02.usd"),
+                # os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_03.usd"),
             ],
             activate_contact_sensors=True,
             random_choice=False,
@@ -508,7 +508,8 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     events: EventCfg = EventCfg()
 
     action_space = 7
-    observation_space = {"joint": 6, "rgb": [camera.height, camera.width, 3], "object": 7, "actions": 7}
+    # observation_space = {"joint": 6, "rgb": [camera.height, camera.width, 3], "object": 7, "actions": 7}
+    observation_space = {"joint": 6, "joint_list": [5, 6], "rgb": [camera.height, camera.width, 3], "object": 7, "actions": 7, "actions_list": [5, 7]}
 
     # observation noise
     observation_noise_model = True
@@ -551,11 +552,11 @@ class Turtlebot3ImageEnvCfg(DirectRLEnvCfg):
     dof_velocity_scale = 0.1
 
     # reward scales
-    dist_reward_scale = 1.0
+    dist_reward_scale = 10.0
     lift_reward_scale = 1.0
-    action_penalty_scale = -0.2
-    self_collision_penalty_scale = -0.5
-    contact_ground_penalty_scale = -0.05
+    action_penalty_scale = -0.15
+    self_collision_penalty_scale = -0.3
+    contact_ground_penalty_scale = 0.0
 
 
 class Turtlebot3ImageEnv(DirectRLEnv):
@@ -595,13 +596,22 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.curr_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
         self.prev_actions = torch.zeros((self.num_envs, self.cfg.action_space), device=self.device)
 
+        self.joint_list = CircularBuffer(max_len=5, batch_size=self.num_envs, device=self.device)  
+        self.action_list = CircularBuffer(max_len=5, batch_size=self.num_envs, device=self.device)
+
+        self.prev_dis = torch.zeros((self.num_envs), device=self.device)
+
+        # self.lift = torch.full_like(self.episode_length_buf, -1)  # すべて -1
+        # self.log  = torch.ones_like(self.episode_length_buf, dtype=torch.bool)
+        # self.success_time = torch.full_like(self.episode_length_buf, -1)
+
     def _setup_scene(self):
         self._robot = Articulation(self.cfg.robot)
         self._camera = TiledCamera(self.cfg.camera)
         self._contact_base = ContactSensor(self.cfg.contact_base)
         self._contact_gripper_object = ContactSensor(self.cfg.contact_gripper_object)
-        self._contact_leftgripper_ground = ContactSensor(self.cfg.contact_leftgripper_ground)
-        self._contact_rightgripper_ground = ContactSensor(self.cfg.contact_rightgripper_ground)
+        # self._contact_leftgripper_ground = ContactSensor(self.cfg.contact_leftgripper_ground)
+        # self._contact_rightgripper_ground = ContactSensor(self.cfg.contact_rightgripper_ground)
         self._ee_frame = FrameTransformer(self.cfg.ee_frame)
         self._lee_frame = FrameTransformer(self.cfg.lee_frame)
         self._ree_frame = FrameTransformer(self.cfg.ree_frame)
@@ -613,8 +623,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.scene.sensors["camera"] = self._camera
         self.scene.sensors["contact_base"] = self._contact_base
         self.scene.sensors["contact_gripper_object"] = self._contact_gripper_object
-        self.scene.sensors["contact_leftgripper_ground"] = self._contact_leftgripper_ground
-        self.scene.sensors["contact_rightgripper_ground"] = self._contact_rightgripper_ground
+        # self.scene.sensors["contact_leftgripper_ground"] = self._contact_leftgripper_ground
+        # self.scene.sensors["contact_rightgripper_ground"] = self._contact_rightgripper_ground
         self.scene.rigid_objects["cube"] = self._cube
         self.scene.sensors["ee_frame"] = self._ee_frame
         self.scene.sensors["lee_frame"] = self._lee_frame
@@ -653,6 +663,7 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
 
         # self.robot_arm_targets = torch.tensor([[0.0, 1.47, -0.83, -0.54]], device=self.device)
+        # self.robot_arm_targets = torch.tensor([[0.0, 0.0, 0.0, 0.0]], device=self.device)
         # self.robot_gripper_targets = torch.tensor([[0.019, 0.019]], device=self.device)
         # wheel_actions[:, 0] = torch.full_like(wheel_actions[:, 0], 0.0)
         # wheel_actions[:, 1] = torch.full_like(wheel_actions[:, 1], 0.0)
@@ -689,8 +700,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
             self.object_pos,
             self.contact_base,
             self.contact_gripper_object,
-            self.contact_leftgripper_ground,
-            self.contact_rightgripper_ground,
+            # self.contact_leftgripper_ground,
+            # self.contact_rightgripper_ground,
             self.cfg.dist_reward_scale,
             self.cfg.lift_reward_scale,
             self.cfg.action_penalty_scale,
@@ -722,7 +733,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         positions_delta, orientations_delta= self.reset_root_state_uniform(
             env_ids=env_ids,
             # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
-            pose_range={"x": (-0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
+            # pose_range={"x": (-0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
+            pose_range={"x": (0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
             avoid_radius=0.2
         )
         default_cube_state[:, :3] += positions_delta
@@ -730,6 +742,30 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self._cube.write_root_link_pose_to_sim(default_cube_state[:, :7], env_ids=env_ids)
         self.curr_actions[env_ids] = 0.0
         self.prev_actions[env_ids] = 0.0
+
+        self.joint_list.reset()
+        self.action_list.reset()
+
+        self.prev_dis[env_ids] = 0.0
+
+        # success_mask = self.success_time[env_ids] >= 0
+        # if success_mask.any():
+        #     succ_envs = env_ids[success_mask]
+        #     times = self.success_time[succ_envs].float() * 0.25   # 例: 1step=0.25[s]
+
+        #     mean_t = times.mean().item()
+        #     std_t  = times.std(unbiased=False).item()  # N 分母
+
+        #     # 1 行だけ出力
+        #     print(f"[RESET] success (n={times.numel()}) :  {mean_t:.3f} ± {std_t:.3f}  [s]")
+
+        # self.lift[env_ids] = -1
+        # self.log[env_ids] = True
+        # self.success_time[env_ids] = -1
+        # self.lift = torch.full_like(self.episode_length_buf, -1)  # すべて -1
+        # self.log  = torch.ones_like(self.episode_length_buf, dtype=torch.bool)
+        # self.success_time = torch.full_like(self.episode_length_buf, -1)
+
 
         self._compute_intermediate_values(env_ids)
 
@@ -776,13 +812,18 @@ class Turtlebot3ImageEnv(DirectRLEnv):
             self.base_pos, self.base_rot, self.cube_pos, self.cube_rot
         )
         object_b = torch.cat((object_pos_b, object_rot_b), dim=1)
+        
+        self.joint_list.append(joint_pos)
+        self.action_list.append(self.curr_actions)
 
         obs = {
             "joint": joint_pos,
+            "joint_list": self.joint_list.buffer,
             "rgb": rgb,
             "object": object_b,
             "actions": self.curr_actions,
-        }
+            "actions_list": self.action_list.buffer,
+            }
 
         return obs
     
@@ -801,8 +842,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         self.object_pos = self._object_frame.data.target_pos_w[env_ids, 0, :]
         self.contact_base = self._contact_base.data.force_matrix_w[env_ids, :]
         self.contact_gripper_object = self._contact_gripper_object.data.force_matrix_w[env_ids, :]
-        self.contact_leftgripper_ground = self._contact_leftgripper_ground.data.force_matrix_w[env_ids, :]
-        self.contact_rightgripper_ground = self._contact_rightgripper_ground.data.force_matrix_w[env_ids, :]
+        # self.contact_leftgripper_ground = self._contact_leftgripper_ground.data.force_matrix_w[env_ids, :]
+        # self.contact_rightgripper_ground = self._contact_rightgripper_ground.data.force_matrix_w[env_ids, :]
 
     def _compute_rewards(
         self,
@@ -814,8 +855,8 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         object_pos,
         contact_base,
         contact_gripper_object,
-        contact_leftgripper_ground,
-        contact_rightgripper_ground,
+        # contact_leftgripper_ground,
+        # contact_rightgripper_ground,
         dist_reward_scale,
         lift_reward_scale,
         action_penalty_scale,
@@ -827,29 +868,59 @@ class Turtlebot3ImageEnv(DirectRLEnv):
         d_l = torch.norm(object_pos-left_tip_pos, dim=-1)
         d_r = torch.norm(object_pos-right_tip_pos, dim=-1)
         d = (d_c*2 + d_l + d_r) / 4
-        dis_reward = torch.exp(-10*d)
+        dis = torch.exp(-10*d)
+
+        dis_reward = dis - self.prev_dis
+
+        self.prev_dis = dis
 
         contact_gripper_object_reward = torch.norm(contact_gripper_object, dim=-1).squeeze() > 1.0
-        catch_object = contact_gripper_object_reward.all(dim=-1)
+        catch_object = contact_gripper_object_reward.any(dim=-1)
         # lift_reward = torch.where(cube_pos[:, 2] > 0.03, 1.0, 0.0) * catch_object
-        lift_reward = torch.where(cube_pos[:, 2] > 0.03, 1.0, 0.0) * catch_object * torch.where(d_c < 0.015, 1.0, 0.0)
+        lift_reward = torch.where(cube_pos[:, 2] > 0.03, 1.0, 0.0) * catch_object * torch.where(d_c < 0.03, 1.0, 0.0)
+        # if lift_reward[0] > 0.0 and self.lift[0] == -1:
+        #     self.lift = self.episode_length_buf.clone()
+        #     print(self.lift[0])
+                
+        # if self.episode_length_buf[0] - self.lift[0] >= 8 and self.lift > 0 and self.log:
+        #     print("success")
+        #     print(self.episode_length_buf[0] * 0.25)
+        #     self.log = False
+        
+        # new_lift_mask = (lift_reward > 0.0) & (self.lift == -1)
+        # self.lift[new_lift_mask] = self.episode_length_buf[new_lift_mask]
 
-        # actions_penalty = self.action_rate_l2_ratio()
-        actions_penalty = torch.mean(torch.abs(joint_acc), dim=-1)
+        # success_mask = (
+        #     (self.lift >= 0) &
+        #     ((self.episode_length_buf - self.lift) >= 8) &
+        #     self.log
+        # )
+        # self.success_time[success_mask] = self.episode_length_buf[success_mask]
+        # self.log[success_mask] = False
+
+        # if success_mask.any():
+        #     env_ids = torch.nonzero(success_mask, as_tuple=False).squeeze(-1)
+        #     for eid in env_ids.tolist():
+        #         print(f"env {eid}: success")
+        #         print((self.episode_length_buf[eid] * 0.25).item())
+        #     self.log[env_ids] = False
+
+        actions_penalty = self.action_rate_l2_ratio()
+        # actions_penalty = torch.mean(torch.abs(joint_acc), dim=-1)
         # print(actions_penalty)
 
         contact_base_penalty = torch.norm(contact_base, dim=-1).squeeze() > 1.0
         self_collision_penalty = contact_base_penalty.any(dim=-1)
         
-        contact_left_ground_penalty = torch.norm(contact_leftgripper_ground, dim=-1).squeeze() > 1.0
-        contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 1.0
-        contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
+        # contact_left_ground_penalty = torch.norm(contact_leftgripper_ground, dim=-1).squeeze() > 1.0
+        # contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 1.0
+        # contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
 
         rewards = (
             dist_reward_scale * dis_reward
             + lift_reward_scale * lift_reward
             + self_collision_penalty_scale * self_collision_penalty
-            + contact_ground_penalty_scale * contact_ground_penalty
+            # + contact_ground_penalty_scale * contact_ground_penalty
             + action_penalty_scale * actions_penalty
         )
 

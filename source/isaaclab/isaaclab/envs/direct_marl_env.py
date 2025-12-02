@@ -178,15 +178,56 @@ class DirectMARLEnv(gym.Env):
 
         # setup noise cfg for adding action and observation noise
         if self.cfg.action_noise_model:
-            self._action_noise_model: dict[AgentID, NoiseModel] = {
+            self._action_noise_model_joint1: dict[AgentID, NoiseModel] = {
                 agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
-                for agent, noise_model in self.cfg.action_noise_model.items()
+                for agent, noise_model in self.cfg.action_noise_model_joint1.items()
                 if noise_model is not None
             }
-        if self.cfg.observation_noise_model:
-            self._observation_noise_model: dict[AgentID, NoiseModel] = {
+            self._action_noise_model_joint2: dict[AgentID, NoiseModel] = {
                 agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
-                for agent, noise_model in self.cfg.observation_noise_model.items()
+                for agent, noise_model in self.cfg.action_noise_model_joint2.items()
+                if noise_model is not None
+            }
+            self._action_noise_model_joint3: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.action_noise_model_joint3.items()
+                if noise_model is not None
+            }
+            self._action_noise_model_joint4: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.action_noise_model_joint4.items()
+                if noise_model is not None
+            }
+            self._action_noise_model_wheel: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.action_noise_model_wheel.items()
+                if noise_model is not None
+            }
+        
+        if self.cfg.observation_noise_model:
+            self._observation_noise_model_joint1: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.observation_noise_model_joint1.items()
+                if noise_model is not None
+            }
+            self._observation_noise_model_joint2: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.observation_noise_model_joint2.items()
+                if noise_model is not None
+            }
+            self._observation_noise_model_joint3: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.observation_noise_model_joint3.items()
+                if noise_model is not None
+            }
+            self._observation_noise_model_joint4: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.observation_noise_model_joint4.items()
+                if noise_model is not None
+            }
+            self._observation_noise_model_rgb: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.observation_noise_model_rgb.items()
                 if noise_model is not None
             }
 
@@ -345,12 +386,25 @@ class DirectMARLEnv(gym.Env):
         actions = {agent: action.to(self.device) for agent, action in actions.items()}
 
         # add action noise
-        if self.cfg.action_noise_model:
-            for agent, action in actions.items():
-                if agent in self._action_noise_model:
-                    actions[agent] = self._action_noise_model[agent].apply(action)
+        # if self.cfg.action_noise_model:
+        #     for agent, action in actions.items():
+        #         if agent in self._action_noise_model:
+        #             actions[agent][:, 0] = self._action_noise_model_joint1[agent].apply(action[:, 0])
+        #             actions[agent][:, 1] = self._action_noise_model_joint1[agent].apply(action[:, 1])
+        #             actions[agent][:, 2] = self._action_noise_model_joint1[agent].apply(action[:, 2])
+        #             actions[agent][:, 3] = self._action_noise_model_joint1[agent].apply(action[:, 3])
+        #             actions[agent][:, -2:] = self._action_noise_model_joint1[agent].apply(action[:, -2:])
+        
         # process actions
         self._pre_physics_step(actions)
+
+        if self.cfg.action_noise_model:
+            for agent, action in actions.items():
+                actions[agent][:, 0] = self._action_noise_model_joint1[agent].apply(action[:, 0])
+                actions[agent][:, 1] = self._action_noise_model_joint2[agent].apply(action[:, 1])
+                actions[agent][:, 2] = self._action_noise_model_joint3[agent].apply(action[:, 2])
+                actions[agent][:, 3] = self._action_noise_model_joint4[agent].apply(action[:, 3])
+                actions[agent][:, -2:] = self._action_noise_model_wheel[agent].apply(action[:, -2:])
 
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop
@@ -400,8 +454,11 @@ class DirectMARLEnv(gym.Env):
         # note: we apply no noise to the state space (since it is used for centralized training or critic networks)
         if self.cfg.observation_noise_model:
             for agent, obs in self.obs_dict.items():
-                if agent in self._observation_noise_model:
-                    self.obs_dict[agent] = self._observation_noise_model[agent].apply(obs)
+                self.obs_dict[agent]["joint"][:, 0] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 0])
+                self.obs_dict[agent]["joint"][:, 1] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 1])
+                self.obs_dict[agent]["joint"][:, 2] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 2])
+                self.obs_dict[agent]["joint"][:, 3] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 3])
+                # self.obs_dict[agent]["rgb"] = self._observation_noise_model_rgb[agent].apply(obs["rgb"])
 
         # return observations, rewards, resets and extras
         return self.obs_dict, self.reward_dict, self.terminated_dict, self.time_out_dict, self.extras
@@ -630,12 +687,31 @@ class DirectMARLEnv(gym.Env):
                 self.event_manager.apply(mode="reset", env_ids=env_ids, global_env_step_count=env_step_count)
 
         # reset noise models
+        # if self.cfg.action_noise_model:
+        #     for noise_model in self._action_noise_model.values():
+        #         noise_model.reset(env_ids)
+        # if self.cfg.observation_noise_model:
+        #     for noise_model in self._observation_noise_model.values():
+        #         noise_model.reset(env_ids)
+        
+        # reset noise models
         if self.cfg.action_noise_model:
-            for noise_model in self._action_noise_model.values():
-                noise_model.reset(env_ids)
+            # self._action_noise_model.reset(env_ids)
+            for agent in self.cfg.possible_agents:
+                self._action_noise_model_joint1[agent].reset(env_ids)
+                self._action_noise_model_joint2[agent].reset(env_ids)
+                self._action_noise_model_joint3[agent].reset(env_ids)
+                self._action_noise_model_joint4[agent].reset(env_ids)
+                self._action_noise_model_wheel[agent].reset(env_ids)
         if self.cfg.observation_noise_model:
-            for noise_model in self._observation_noise_model.values():
-                noise_model.reset(env_ids)
+            # self._observation_noise_model.reset(env_ids)
+            for agent in self.cfg.possible_agents:
+                self._observation_noise_model_joint1[agent].reset(env_ids)
+                self._observation_noise_model_joint2[agent].reset(env_ids)
+                self._observation_noise_model_joint3[agent].reset(env_ids)
+                self._observation_noise_model_joint4[agent].reset(env_ids)
+                self._observation_noise_model_rgb[agent].reset(env_ids)
+
 
         # reset the episode length buffer
         self.episode_length_buf[env_ids] = 0
