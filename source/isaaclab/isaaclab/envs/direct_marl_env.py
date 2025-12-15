@@ -399,13 +399,16 @@ class DirectMARLEnv(gym.Env):
         self._pre_physics_step(actions)
 
         if self.cfg.action_noise_model:
-            for agent, action in actions.items():
-                actions[agent][:, 0] = self._action_noise_model_joint1[agent].apply(action[:, 0])
-                actions[agent][:, 1] = self._action_noise_model_joint2[agent].apply(action[:, 1])
-                actions[agent][:, 2] = self._action_noise_model_joint3[agent].apply(action[:, 2])
-                actions[agent][:, 3] = self._action_noise_model_joint4[agent].apply(action[:, 3])
-                actions[agent][:, -2:] = self._action_noise_model_wheel[agent].apply(action[:, -2:])
-
+            # for agent, action in actions.items():
+            self.robot_arm_targets_1[:, 0] = self._action_noise_model_joint1["robot_1"].apply(self.robot_arm_targets_1[:, 0])
+            self.robot_arm_targets_1[:, 1] = self._action_noise_model_joint2["robot_1"].apply(self.robot_arm_targets_1[:, 1])
+            self.robot_arm_targets_1[:, 2] = self._action_noise_model_joint3["robot_1"].apply(self.robot_arm_targets_1[:, 2])
+            self.robot_arm_targets_1[:, 3] = self._action_noise_model_joint4["robot_1"].apply(self.robot_arm_targets_1[:, 3])
+            self.robot_arm_targets_2[:, 0] = self._action_noise_model_joint1["robot_2"].apply(self.robot_arm_targets_2[:, 0])
+            self.robot_arm_targets_2[:, 1] = self._action_noise_model_joint2["robot_2"].apply(self.robot_arm_targets_2[:, 1])
+            self.robot_arm_targets_2[:, 2] = self._action_noise_model_joint3["robot_2"].apply(self.robot_arm_targets_2[:, 2])
+            self.robot_arm_targets_2[:, 3] = self._action_noise_model_joint4["robot_2"].apply(self.robot_arm_targets_2[:, 3])
+            
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop
         is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
@@ -432,10 +435,11 @@ class DirectMARLEnv(gym.Env):
         self.episode_length_buf += 1  # step in current episode (per env)
         self.common_step_counter += 1  # total step (common for all envs)
 
-        self.terminated_dict, self.time_out_dict = self._get_dones()
-        self.reset_buf[:] = math.prod(self.terminated_dict.values()) | math.prod(self.time_out_dict.values())
         self.reward_dict = self._get_rewards()
-
+        self.terminated_dict, self.time_out_dict = self._get_dones()
+        self.reset_buf[:] = math.prod(self.time_out_dict.values())
+        # self.reset_buf[:] = math.prod(self.terminated_dict.values()) | math.prod(self.time_out_dict.values())
+        
         # -- reset envs that terminated/timed-out and log the episode information
         reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
         if len(reset_env_ids) > 0:

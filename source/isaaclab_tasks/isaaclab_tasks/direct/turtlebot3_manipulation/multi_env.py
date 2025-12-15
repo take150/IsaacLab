@@ -1729,6 +1729,7 @@ class Turtlebot3MultiEnv(DirectMARLEnv):
             (latest_lift_step >= 0) &
             ((cur_step - latest_lift_step) >= 4) &
             (dt <= 4) &
+            (both_lifted) &
             self.log
         )
 

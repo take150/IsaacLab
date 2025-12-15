@@ -368,7 +368,7 @@ class Turtlebot3SinglePlaceEnvCfg(DirectRLEnvCfg):
             assets_cfg=[
                 sim_utils.CuboidCfg(
                     # size=(0.1, 0.3, 0.015),
-                    size=(0.15, 0.15, 0.03),
+                    size=(0.08, 0.08, 0.03),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
                 ),
             ],
@@ -537,7 +537,7 @@ class Turtlebot3SinglePlaceEnvCfg(DirectRLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="robot_goal",
                 offset=OffsetCfg(
-                    pos=[0.0, 0.0, 0.035],
+                    pos=[0.0, 0.0, 0.04],
                 ),
             ),
         ],
@@ -560,7 +560,7 @@ class Turtlebot3SinglePlaceEnvCfg(DirectRLEnvCfg):
     events: EventCfg = EventCfg()
 
     action_space = 7
-    observation_space = {"joint": [5, 6], "object": [5, 14], "actions": [5, 7], "goal": [5, 14]}
+    observation_space = {"joint": [5, 6], "object": [5, 14], "actions": [5, 7], "goal": [5, 14], "task_id": 1}
     
     # observation noise
     observation_noise_model = True
@@ -605,9 +605,12 @@ class Turtlebot3SinglePlaceEnvCfg(DirectRLEnvCfg):
     # reward scales
     dist_reward_scale = 1.0
     lift_reward_scale = 1.0
+    drop_penalty_scale = -1.0
     dist_g_reward_scale = 1.0
-    goal_reward_scale = 5.0
+    task_reward_scale = 40.0
+    goal_reward_scale = 1.0
     action_penalty_scale = -0.15
+    joint_1_penalty_scale = -0.5
     self_collision_penalty_scale = -0.15
     contact_ground_penalty_scale = 0.0
     contact_goal_penalty_scale = -0.15
@@ -643,6 +646,9 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         self.gripper_ids, _ = self._robot.find_joints(self.gripper_names, preserve_order=False)
         self.wheel_ids, _ = self._robot.find_joints(self.wheel_names, preserve_order=False)
 
+        self.joint_1_ids, _ = self._robot.find_joints("joint1", preserve_order=False)
+        self.default_joint_1_pos = self._robot.data.default_joint_pos[:, self.joint_1_ids]
+
         self.robot_arm_targets = torch.zeros((self.num_envs, len(self.arm_ids)), device=self.device)
         self.robot_gripper_targets = torch.zeros((self.num_envs, len(self.gripper_ids)), device=self.device)
         self.robot_wheel_targets = torch.zeros((self.num_envs, len(self.wheel_ids)), device=self.device)
@@ -657,8 +663,19 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
 
         self.reward_delay = True
         self.reward = torch.zeros(self.num_envs, dtype=torch.float32, device=self.device)
+        self.prev_dis_g = torch.zeros(self.num_envs, dtype=torch.float32, device=self.device)
 
-        self.goal = torch.full_like(self.episode_length_buf, -1)  # すべて -1
+        self.gripper_bias = -0.5
+
+        self.lift = torch.full_like(self.episode_length_buf, -1)
+        self.reach = torch.full_like(self.episode_length_buf, -1)
+        self.drop = torch.full_like(self.episode_length_buf, -1)
+        self.unreach = torch.full_like(self.episode_length_buf, -1)
+        self.goal = torch.full_like(self.episode_length_buf, -1)
+        self.goal_count = torch.zeros_like(self.episode_length_buf, dtype=torch.float32)
+        self.task_id = torch.zeros(self.num_envs, device=self.device)
+        self.prev_task_id = torch.zeros_like(self.task_id)
+        self.total_changes = torch.zeros_like(self.task_id)
         self.log  = torch.ones_like(self.episode_length_buf, dtype=torch.bool)
         self.success_time = torch.full_like(self.episode_length_buf, -1)
 
@@ -722,7 +739,12 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
     def _pre_physics_step(self, actions: torch.Tensor):
         actions = torch.nan_to_num(actions, nan=0.0)
         arm_actions = actions[:, :len(self.arm_ids)].clone().clamp(-1.0, 1.0)
-        gripper_action = actions[:, len(self.arm_ids)].clone().clamp(-1.0, 1.0) 
+        gripper_action = actions[:, len(self.arm_ids)].clone().clamp(-1.0, 1.0)
+        # raw_gripper_action = actions[:, len(self.arm_ids)].clone()
+        # bias_tensor = torch.zeros_like(raw_gripper_action)
+        # bias_tensor[self.task_id==1] = self.gripper_bias
+        # gripper_action = (raw_gripper_action + bias_tensor).clamp(-1.0, 1.0)
+        gripper_action[self.task_id==1] = -1.0
         wheel_actions = actions[:, len(self.arm_ids)+1:].clone().clamp(-1.0, 1.0)
 
         arm_targets = self._robot.data.joint_pos[:, self.arm_ids] + self.robot_dof_vel_limits_tensor[self.arm_ids] * self.dt * arm_actions
@@ -756,15 +778,14 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         #     truncated = self.episode_length_buf >= (self.max_episode_length - 1) / 2
         # else:
         #     truncated = self.episode_length_buf >= self.max_episode_length - 1
-        
-        terminated = torch.zeros(self.num_envs, dtype=torch.bool)
+
         truncated = self.episode_length_buf >= self.max_episode_length - 1
-        # if terminated.any():
-        #     print("Terminated contains at least one 1 (True).", terminated.sum().item())
+        # terminated = torch.zeros(self.num_envs, dtype=torch.bool)
+        terminated = (self.task_id != self.prev_task_id)
 
-        # if truncated.any():
-        #     print("Truncated contains at least one 1 (True).", truncated.sum().item())
-
+        self.prev_task_id[:] = self.task_id[:]
+        self.total_changes += terminated.float()
+        
         return terminated, truncated
 
     def _get_rewards(self) -> torch.Tensor:
@@ -774,7 +795,7 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
             self.ee_pos,
             self.lee_pos,
             self.ree_pos,
-            self.joint_acc,
+            self.joint_1_pos,
             self.cube_pos,
             self.goal_pos,
             self.contact_base,
@@ -783,9 +804,12 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
             self.contact_robot_goal,
             self.cfg.dist_reward_scale,
             self.cfg.lift_reward_scale,
+            self.cfg.drop_penalty_scale,
             self.cfg.dist_g_reward_scale,
             self.cfg.goal_reward_scale,
+            self.cfg.task_reward_scale,
             self.cfg.action_penalty_scale,
+            self.cfg.joint_1_penalty_scale,
             self.cfg.self_collision_penalty_scale,
             self.cfg.contact_ground_penalty_scale,
             self.cfg.contact_goal_penalty_scale,
@@ -829,7 +853,7 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
                 # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
                 # pose_range={"x": (-0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
                 # pose_range={"x": (0.5, 0.5), "y": (-0.0, 0.0), "z": (0.01, 0.01), "yaw": (0.0, 0.0)},
-                pose_range={"x": (0.5, 0.6), "y": (-0.05, 0.05), "z": (0.001, 0.001), "yaw": (0.0, 0.0)},
+                pose_range={"x": (0.6, 0.7), "y": (-0.05, 0.05), "z": (0.001, 0.001), "yaw": (0.0, 0.0)},
                 avoid_radius=0.2
             )
         default_goal_state[:, :3] += positions_goal
@@ -844,7 +868,7 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
             # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
             # pose_range={"x": (-0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
             # pose_range={"x": (0.5, 0.5), "y": (-0.0, 0.0), "z": (0.07, 0.07), "yaw": (0.0, 0.0)},
-            pose_range={"x": (0.15, 0.4), "y": (-0.05, 0.05), "z": (0.01, 0.01), "yaw": (0.0, 0.0)},
+            pose_range={"x": (0.25, 0.5), "y": (-0.05, 0.05), "z": (0.01, 0.01), "yaw": (0.0, 0.0)},
             avoid_radius=0.2
         )
         default_cube_state[:, :3] += positions_delta
@@ -871,10 +895,21 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
             with open(self.csv_path, "a", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
                 writer.writerow([self.episode_idx, times.numel()])
+        
+        tqdm.tqdm.write(f"[RESET] total_changes (n={self.total_changes.mean().item()})")
+        tqdm.tqdm.write(f"[RESET] goal_count (n={self.goal_count.mean().item()})")
 
         self.episode_idx += 1
 
+        self.lift[env_ids] = -1
+        self.reach[env_ids] = -1
+        self.drop[env_ids] = -1
+        self.unreach[env_ids] = -1
         self.goal[env_ids] = -1
+        self.goal_count[env_ids] = 0
+        self.task_id[env_ids] = 0
+        self.prev_task_id[env_ids] = 0
+        self.total_changes[env_ids] = 0
         self.log[env_ids] = True
         self.success_time[env_ids] = -1
         # self.lift = torch.full_like(self.episode_length_buf, -1)  # すべて -1
@@ -884,9 +919,12 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         if self.reward.mean().item() >= 250:
             self.reward_delay = True
         
+        # self.gripper_bias = min(-0.8, self.gripper_bias+0.05)
+        
         self.curr_actions[env_ids] = 0.0
         self.prev_actions[env_ids] = 0.0
         self.reward[env_ids] = 0.0
+        self.prev_dis_g[env_ids] = 0.0
 
         self._compute_intermediate_values(env_ids)
 
@@ -934,12 +972,29 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         self.goal_list.append(self.goal_be)
 
         joint_list = 2 * (self.joint_list.buffer - self.robot_dof_lower_limits[self.joint_pos_ids]) / (self.robot_dof_upper_limits[self.joint_pos_ids] - self.robot_dof_lower_limits[self.joint_pos_ids]) - 1
+        
+        # joint_list = (torch.arange(1, 31, device=self.device) / 10).view(1, 5, 6)
+        # action_list = (torch.arange(31, 66, device=self.device) / 10).view(1, 5, 7)
+        # object_list = (torch.arange(66, 136, device=self.device) / 10).view(1, 5, 14)
+        # goal_list = (torch.arange(136, 206, device=self.device) / 10).view(1, 5, 14)
+        # obs = {
+        #     "joint": joint_list,
+        #     # "object": self.object_list.buffer,
+        #     "object": object_list,
+        #     # "actions": self.action_list.buffer,
+        #     "actions": action_list,
+        #     # "goal": self.goal_list.buffer,
+        #     "goal": goal_list,
+        #     "task_id": self.task_id,
+        #     # "rgb": rgb,
+        #     }
 
         obs = {
             "joint": joint_list,
             "object": self.object_list.buffer,
             "actions": self.action_list.buffer,
             "goal": self.goal_list.buffer,
+            "task_id": self.task_id,
             # "rgb": rgb,
             }
         
@@ -950,6 +1005,7 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
             env_ids = self._robot._ALL_INDICES
 
         self.joint_pos = self._robot.data.joint_pos[:, self.joint_pos_ids]
+        self.joint_1_pos = self._robot.data.joint_pos[:, self.joint_1_ids]
         self.joint_acc = self._robot.data.joint_acc[env_ids][:, self.joint_pos_ids]
         
         self.base_pos = self._robot.data.root_link_state_w[env_ids, :3]
@@ -975,7 +1031,6 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         )
         self.object_be = torch.cat((object_pos_b, object_rot_b, object_pos_e, object_rot_e), dim=1)        
 
-        
         goal_pos = self._goal.data.root_link_state_w[env_ids, :3]
         goal_rot = self._goal.data.root_link_state_w[env_ids, 3:7]
 
@@ -994,7 +1049,7 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         end_effector_pos,
         left_tip_pos,
         right_tip_pos,
-        joint_acc,
+        joint_1_pos,
         cube_pos,
         goal_pos,
         contact_base,
@@ -1003,9 +1058,12 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         contact_robot_goal,
         dist_reward_scale,
         lift_reward_scale,
+        drop_penalty_scale,
         dist_g_reward_scale,
         goal_reward_scale,
+        task_reward_scale,
         action_penalty_scale,
+        joint_1_penalty_scale,
         self_collision_penalty_scale,
         contact_ground_penalty_scale,
         contact_goal_penalty_scale,
@@ -1018,41 +1076,89 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         dis_reward = torch.exp(-10*d)
 
         d_g = torch.norm(cube_pos-goal_pos, dim=-1)
-        dis_g_reward = torch.exp(-10*d_g)
+        # dis_g_reward = torch.exp(-10*d_g)
+        dis_g_reward = torch.exp(-5*d_g) + torch.exp(-30*d_g)
+        # dis_g = torch.exp(-5*d_g) + torch.exp(-30*d_g)
+        # dis_g_reward = dis_g - self.prev_dis_g
+        # self.prev_dis_g = dis_g
+        dis_g_penalty = -torch.tanh(-10*d_g)
 
         contact_gripper_object_reward = torch.norm(contact_gripper_object, dim=-1).squeeze() > 1.0
         catch_object = contact_gripper_object_reward.any(dim=-1)
         lift_reward = torch.where(cube_pos[:, 2] > 0.03, 1.0, 0.0) * catch_object * torch.where(d_c < 0.025, 1.0, 0.0)
+
+        is_goal = (
+            (contact_object_goal.select(dim=-1, index=0).squeeze() < 0.1) &
+            (contact_object_goal.select(dim=-1, index=1).squeeze() < 0.1) &
+            (contact_object_goal.select(dim=-1, index=2).squeeze() > 0.3) &
+            ~catch_object
+        )
         
-        dis_g_reward = torch.where(
-            lift_reward.bool() * self.reward_delay,
-            dis_g_reward,
-            0.0
-        )
+        if is_goal.ndim == 0:
+            is_goal = is_goal.unsqueeze(-1)
+        
+        goal_reward = is_goal
 
-        goal = (
-            (contact_object_goal.select(dim=-1, index=0).squeeze() < 0.01) &
-            (contact_object_goal.select(dim=-1, index=1).squeeze() < 0.01) &
-            (contact_object_goal.select(dim=-1, index=2).squeeze() > 0.3)
-        )
-
-        goal_reward = torch.where(
-            goal * ~catch_object,
-            1.0,
-            0.0
-        )
-
-        new_goal_mask = (goal * ~catch_object) & (self.goal == -1)
+        self.goal[~is_goal] = -1
+        new_goal_mask = is_goal & (self.goal == -1)
         self.goal[new_goal_mask] = self.episode_length_buf[new_goal_mask]
-
-        success_mask = (
-            goal &
-            (self.goal >= 0) &
+        success_goal_mask = (
+            is_goal &
+            (self.goal != -1) &
             ((self.episode_length_buf - self.goal) >= 8) &
             self.log
         )
-        self.success_time[success_mask] = self.episode_length_buf[success_mask]
-        self.log[success_mask] = False
+
+        is_lifted = lift_reward.bool()
+        is_dropped = ~(catch_object * torch.where(d_c < 0.025, 1.0, 0.0)).bool()
+        # is_dropped = ~is_lifted & ~is_goal
+
+        self.lift[is_dropped] = -1
+        new_lift_mask = is_lifted & (self.lift == -1)
+        self.lift[new_lift_mask] = self.episode_length_buf[new_lift_mask]
+        success_lift_mask = (
+            is_lifted &
+            (self.lift != -1) &
+            ((self.episode_length_buf - self.lift) >= 12)
+        )
+
+        is_reached = (d_g < 0.02) & is_lifted
+        is_unreached = ~is_reached
+        self.reach[is_unreached] = -1
+        new_reach_mask = is_reached & (self.reach == -1)
+        self.reach[new_reach_mask] = self.episode_length_buf[new_reach_mask]
+        success_reach_mask = (
+            is_reached &
+            (self.reach != -1) &
+            ((self.episode_length_buf - self.reach) >= 12)
+        )
+        
+        self.drop[is_lifted | is_goal] = -1
+        new_drop_mask = is_dropped & (self.drop == -1)
+        self.drop[new_drop_mask] = self.episode_length_buf[new_drop_mask]
+        failed_lift_mask = (
+            is_dropped &
+            (self.drop != -1) &
+            ((self.episode_length_buf - self.drop) >= 12)
+        )
+
+        self.unreach[is_reached | is_goal] = -1
+        new_unreach_mask = is_unreached & (self.unreach == -1)
+        self.unreach[new_unreach_mask] = self.episode_length_buf[new_unreach_mask]
+        failed_reach_mask = (
+            is_unreached &
+            (self.unreach != -1) &
+            ((self.episode_length_buf - self.unreach) >= 12)
+        )                
+
+        # success_log = success_mask & self.log
+        self.success_time[success_goal_mask] = self.episode_length_buf[success_goal_mask]
+        self.log[success_goal_mask] = False
+
+        task_id = self.task_id.squeeze(-1)
+        task_0 = (task_id == 0)
+        task_1 = (task_id == 1)   
+        task_2 = (task_id == 2)
 
         # if success_mask.any():
         #     env_ids = torch.nonzero(success_mask, as_tuple=False).squeeze(-1)
@@ -1062,29 +1168,62 @@ class Turtlebot3SinglePlaceEnv(DirectRLEnv):
         #     self.log[env_ids] = False
 
         actions_penalty = self.action_rate_l2_ratio()
-        # actions_penalty = torch.mean(torch.abs(joint_acc), dim=-1)
-        # print(actions_penalty)
+        joint_1_penalty = torch.abs(joint_1_pos - self.default_joint_1_pos).squeeze()
 
         contact_base_penalty = torch.norm(contact_base, dim=-1).squeeze() > 1.0
         self_collision_penalty = contact_base_penalty.any(dim=-1)
 
         contact_goal = torch.norm(contact_robot_goal, dim=-1).squeeze() > 1.0
         contact_goal_penalty = contact_goal.any(dim=-1)
+
         
         # contact_left_ground_penalty = torch.norm(contact_leftgripper_ground, dim=-1).squeeze() > 1.0
         # contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 1.0
         # contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
-    
+
         reward = (
-            dist_reward_scale * dis_reward
-            # goal_reward
-            + lift_reward_scale * lift_reward
-            + dist_g_reward_scale * dis_g_reward
-            + self_collision_penalty_scale * self_collision_penalty
-            # + contact_ground_penalty_scale * contact_ground_penalty
+            self_collision_penalty_scale * self_collision_penalty
             + action_penalty_scale * actions_penalty
-            # + contact_goal_penalty_scale * contact_goal_penalty
+            + joint_1_penalty_scale * joint_1_penalty
+            + contact_goal_penalty_scale * contact_goal_penalty
         )
+
+        # reward[task_0] += (
+        #     dist_reward_scale * dis_reward[task_0]
+        #     + lift_reward_scale * lift_reward[task_0]
+        #     + task_reward_scale * success_mask[task_0]
+        # )
+        reward[task_0] = 0
+
+        # reward[task_1] += (
+        #     dist_g_reward_scale * dis_g_reward[task_1] * is_lifted[task_1]
+        #     + drop_penalty_scale * is_dropped[task_1].float()
+        #     # + goal_reward_scale * goal_reward[task_1]
+        # )
+        reward[task_1] = 0
+
+        self.goal_count += goal_reward
+
+        reward[task_2] += (
+            - dist_g_reward_scale * dis_g_penalty[task_2]
+            + goal_reward_scale * goal_reward[task_2]
+        )
+        
+        # reward = (
+        #     dist_reward_scale * dis_reward
+        #     # goal_reward
+        #     + lift_reward_scale * lift_reward
+        #     # + dist_g_reward_scale * dis_g_reward
+        #     + self_collision_penalty_scale * self_collision_penalty
+        #     # + contact_ground_penalty_scale * contact_ground_penalty
+        #     + action_penalty_scale * actions_penalty
+        #     # + contact_goal_penalty_scale * contact_goal_penalty
+        # )
+
+        self.task_id[success_lift_mask] = 1
+        self.task_id[success_reach_mask] = 2
+        self.task_id[failed_reach_mask & task_2] = 1
+        self.task_id[failed_lift_mask] = 0
 
         self.reward += reward
 

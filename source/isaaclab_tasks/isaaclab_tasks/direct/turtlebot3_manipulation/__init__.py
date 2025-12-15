@@ -15,6 +15,20 @@ from . import agents
 ##
 
 gym.register(
+    id="Isaac-Turtlebot3-Tuning-Direct-v0",
+    entry_point=f"{__name__}.tuning_env:Turtlebot3TuningEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.tuning_env:Turtlebot3TuningEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
     id="Isaac-Turtlebot3-Reach-Direct-v0",
     entry_point=f"{__name__}.reach_env_v0:Turtlebot3ReachEnv",
     disable_env_checker=True,
@@ -128,6 +142,20 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.single_place_env:Turtlebot3SinglePlaceEnvCfg",
+        "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
+        "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
+        "skrl_ippo_cfg_entry_point": f"{agents.__name__}:skrl_ippo_cfg.yaml",
+        "skrl_mappo_cfg_entry_point": f"{agents.__name__}:skrl_mappo_cfg.yaml",
+    },
+)
+
+gym.register(
+    id="Isaac-Turtlebot3-Multi-Place-Direct-v0",
+    entry_point=f"{__name__}.multi_place_env:Turtlebot3MultiPlaceEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.multi_place_env:Turtlebot3MultiPlaceEnvCfg",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:Turtlebot3ManipulationPPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
