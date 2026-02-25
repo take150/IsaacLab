@@ -53,6 +53,66 @@ class EventCfg:
 
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
+    # randomize_joints_gain_1 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=["joint1"]),
+    #         "stiffness_distribution_params": (380.0, 420.0),
+    #         "damping_distribution_params": (38.0, 42.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_2 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=["joint2"]),
+    #         "stiffness_distribution_params": (380.0, 420.0),
+    #         "damping_distribution_params": (38.0, 42.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_3 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=["joint3"]),
+    #         "stiffness_distribution_params": (380.0, 420.0),
+    #         "damping_distribution_params": (38.0, 42.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_4 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=["joint4"]),
+    #         "stiffness_distribution_params": (380.0, 420.0),
+    #         "damping_distribution_params": (38.0, 42.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_friction_and_armature = EventTerm(
+    #     func=mdp.randomize_joint_parameters,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot"),
+    #         "friction_distribution_params": (0.05, 0.15),
+    #         "armature_distribution_params": (0.005, 0.01),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
     randomize_leftcaster_friction = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
@@ -148,14 +208,14 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
     )
 
     # scene
-    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=256, env_spacing=100.0, replicate_physics=False)
+    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=512, env_spacing=100.0, replicate_physics=False)
 
     # robot
     robot = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot",
         spawn=sim_utils.MultiUsdFileCfg(
             usd_path=[
-                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_00.usd"),
+                os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_test_.usd"),
                 # os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_01.usd"),
                 # os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_02.usd"),
                 # os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_03.usd"),
@@ -189,8 +249,39 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
                 joint_names_expr=["joint[1-4]"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.2,
-                stiffness=80.0,
-                damping=4.0,
+                # stiffness={"joint1": 200, "joint2": 220, "joint3": 50, "joint4": 70},
+                # stiffness={"joint1": 200, "joint2": 220, "joint3": 40, "joint4": 80},
+                # stiffness={"joint1": 200, "joint2": 220, "joint3": 40, "joint4": 100},
+                # damping=4.0,
+
+                # stiffness=200,
+                # damping=50.0,
+                # friction=0.5,
+                # armature=0.01,
+
+                stiffness=100,
+                damping=5.0,
+
+                # ここからaction_noizeはFalse
+                # stiffness=100,
+                # damping=20.0,
+                # friction=0.2,
+                # armature=0.0075
+
+                # stiffness={"joint1": 200, "joint2": 20, "joint3": 25, "joint4": 200},
+                # damping={"joint1": 40, "joint2": 4, "joint3": 5, "joint4": 30},
+                # friction=0.05,
+                # armature=0.0075
+
+                # stiffness={"joint1": 200, "joint2": 17.5, "joint3": 20, "joint4": 200},
+                # damping={"joint1": 40, "joint2": 5, "joint3": 5, "joint4": 40},
+                # friction=0.1,
+                # armature=0.0075
+
+                # stiffness={"joint1": 200, "joint2": 200, "joint3": 200, "joint4": 200},
+                # damping={"joint1": 10, "joint2": 10, "joint3": 10, "joint4": 10},
+                # friction=0.05,
+                # armature=0.0075
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
@@ -198,15 +289,28 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
                 velocity_limit_sim=0.02,
                 stiffness=2000.0,
                 damping=100.0,
+                # friction=0.2
             ),
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.8,
                 stiffness=0.0,
-                damping=6.0,
+                damping=300.0,
             ),
         },
+    )
+
+    camera: TiledCameraCfg = TiledCameraCfg(
+        prim_path="/World/envs/env_.*/Robot/base_footprint/front_cam",
+        update_period=0.03,
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.041), rot=(0.99756405, 0.0, 0.06975647, 0.0), convention="world"),
+        data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
+        ),
+        width=120,
+        height=120,
     )
 
     contact_base: ContactSensorCfg = ContactSensorCfg(
@@ -240,7 +344,7 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
             assets_cfg=[
                 sim_utils.CuboidCfg(
                     size=(10.0, 10.0, 0.01),
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.3, 0.3, 0.3), metallic=0.2),
                 ),
             ],
             random_choice=False,
@@ -331,7 +435,7 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
                 prim_path="/World/envs/env_.*/Robot/base_link",
                 name="goal",
                 offset=OffsetCfg(
-                    pos=[0.2, 0.0, 0.005],
+                    pos=[0.2, 0.05, 0.02],
                 ),
             ),
         ],
@@ -341,42 +445,56 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
 
     action_space = 7
     observation_space = {"joint": 6, "actions": 7}
+    # observation_space = {"joint": 6, "actions": 7, "rgb": [camera.height, camera.width, 3]}
     
     # observation noise
-    observation_noise_model = True
+    observation_noise_model = False
     observation_noise_model_joint1: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
       noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
     )
     observation_noise_model_joint2: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.01, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
     )
     observation_noise_model_joint3: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.01, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
     )
     observation_noise_model_joint4: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.01, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
     )
     observation_noise_model_rgb: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
     )    
 
     # action noise
     action_noise_model = True
 
     action_noise_model_joint1: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
       noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
     )
     action_noise_model_joint2: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.025, std=0.0025, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.01, std=0.0025, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0025, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
     )
     action_noise_model_joint3: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.01, std=0.0025, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0075, std=0.0025, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0025, std=0.005, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
     )
     action_noise_model_joint4: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.005, std=0.0015, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0015, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"),
+    #   noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.005, std=0.0015, operation="add"),
     )
     action_noise_model_wheel: noise_utils.NoiseModelCfg = noise_utils.NoiseModelCfg(
-      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.1, operation="add"),
+      noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0, operation="add"),
     )
 
     action_scale = 1.0
@@ -384,9 +502,9 @@ class Turtlebot3TuningEnvCfg(DirectRLEnvCfg):
 
     # reward scales
     dist_reward_scale = 1.0
-    action_penalty_scale = -2.0
+    action_penalty_scale = -0.15
     self_collision_penalty_scale = -0.25
-    contact_ground_penalty_scale = -0.25
+    contact_ground_penalty_scale = -0.15
 
 
 class Turtlebot3TuningEnv(DirectRLEnv):
@@ -431,8 +549,15 @@ class Turtlebot3TuningEnv(DirectRLEnv):
 
         self.prev_joint_pos = torch.zeros((self.num_envs, self.cfg.observation_space['joint']), device=self.device)
 
+        # with open('data_log.csv', mode='w', newline='') as f:
+        #     writer = csv.writer(f)
+        #     # 列名（必要に応じて変更してください）
+        #     header = ["ideal_joint1", "ideal_joint2", "ideal_joint3", "ideal_joint4", "real_joint1", "real_joint2", "real_joint3", "real_joint4"]
+        #     writer.writerow(header)
+
     def _setup_scene(self):
         self._robot = Articulation(self.cfg.robot)
+        # self._camera = TiledCamera(self.cfg.camera)
         self._contact_base = ContactSensor(self.cfg.contact_base)
         self._contact_leftgripper_ground = ContactSensor(self.cfg.contact_leftgripper_ground)
         self._contact_rightgripper_ground = ContactSensor(self.cfg.contact_rightgripper_ground)
@@ -443,6 +568,7 @@ class Turtlebot3TuningEnv(DirectRLEnv):
         self._ground_plane = RigidObject(self.cfg.ground_plane)
 
         self.scene.articulations["robot"] = self._robot
+        # self.scene.sensors["camera"] = self._camera
         self.scene.sensors["contact_base"] = self._contact_base
         self.scene.sensors["contact_leftgripper_ground"] = self._contact_leftgripper_ground
         self.scene.sensors["contact_rightgripper_ground"] = self._contact_rightgripper_ground
@@ -472,6 +598,9 @@ class Turtlebot3TuningEnv(DirectRLEnv):
         arm_actions = actions[:, :len(self.arm_ids)].clone().clamp(-1.0, 1.0)
         gripper_action = actions[:, len(self.arm_ids)].clone().clamp(-1.0, 1.0) 
         wheel_actions = actions[:, len(self.arm_ids)+1:].clone().clamp(-1.0, 1.0)
+        # arm_actions[:, 1] = 0.0
+        # arm_actions[:, 2] = -1.0
+        # arm_actions[:, 3] = -1.0
 
         arm_targets = self._robot.data.joint_pos[:, self.arm_ids] + self.robot_dof_vel_limits_tensor[self.arm_ids] * self.dt * arm_actions
         # arm_targets[:, 0] = 0.0
@@ -488,9 +617,19 @@ class Turtlebot3TuningEnv(DirectRLEnv):
 
         self.robot_wheel_targets[:] = wheel_actions * self.robot_dof_vel_limits_tensor[self.wheel_ids]
 
-        # self.robot_arm_targets = torch.tensor([[0.0, 1.47, -0.83, -0.54]], device=self.device)
+        # self.robot_arm_targets = torch.tensor([[0.0, 1.0, 0.0, 0.0]], device=self.device)
+        # self.robot_arm_targets = torch.tensor([[0.0, 1.0, -0.5, -0.55]], device=self.device)
+        # print(1, self.robot_arm_targets)
+        # print(2, self.joint_pos)
+
+        # joint_tensor = torch.cat((self.robot_arm_targets, self.joint_pos), dim=1)
+        # data_list = joint_tensor.flatten().tolist()
+        # with open('data_log.csv', mode='a', newline='') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerow(data_list)
+        
         # self.robot_arm_targets = torch.tensor([[0.0, 0.0, 0.0, 0.0]], device=self.device)
-        # self.robot_gripper_targets = torch.tensor([[0.019, 0.019]], device=self.device)
+        # self.robot_gripper_targets[:] = torch.tensor([[-0.01, -0.01]], device=self.device)
     
         self.curr_actions = actions
 
@@ -526,14 +665,15 @@ class Turtlebot3TuningEnv(DirectRLEnv):
     def _reset_idx(self, env_ids: torch.Tensor | None):
         super()._reset_idx(env_ids)
 
-        joint_pos = self._robot.data.default_joint_pos[env_ids] + sample_uniform(
-            -0.3,
-            0.3,
-            (len(env_ids), self._robot.num_joints),
-            self.device,
-        )
-        joint_pos = torch.clamp(joint_pos, self.robot_dof_lower_limits, self.robot_dof_upper_limits)
+        # joint_pos = self._robot.data.default_joint_pos[env_ids] + sample_uniform(
+        #     -0.3,
+        #     0.3,
+        #     (len(env_ids), self._robot.num_joints),
+        #     self.device,
+        # )
+        # joint_pos = torch.clamp(joint_pos, self.robot_dof_lower_limits, self.robot_dof_upper_limits)
         # joint_pos[:, self.joint_1_ids] = 0.0
+        joint_pos = self._robot.data.default_joint_pos[env_ids]
         joint_vel = torch.zeros_like(joint_pos)
         default_robot_state = self._robot.data.default_root_state[env_ids].clone()
         default_robot_state[:, :3] += self.scene.env_origins[env_ids]
@@ -582,9 +722,12 @@ class Turtlebot3TuningEnv(DirectRLEnv):
         return positions_delta, orientations_delta
 
     def _get_observations(self) -> dict:
+        # rgb = self._camera.data.output["rgb"] / 255.0
+
         obs = {
             "joint": self.joint_pos,
             "actions": self.curr_actions,
+            # "rgb": rgb
             }
 
         return obs
@@ -626,9 +769,12 @@ class Turtlebot3TuningEnv(DirectRLEnv):
         d_l = torch.norm(goal_pos - left_tip_pos, dim=-1)
         d_r = torch.norm(goal_pos - right_tip_pos, dim=-1)
         d = (d_c + d_l + d_r) / 3
-        dis_reward = torch.exp(-10*d)
+        dis_reward = torch.exp(-20*d)
 
-        # actions_penalty = self.action_rate_l2_ratio()
+        # print(1, goal_pos)
+        # print(2, end_effector_pos)
+
+        actions_penalty = self.action_rate_l2_ratio()
        
         contact_base_penalty = torch.norm(contact_base, dim=-1).squeeze() > 1.0
         self_collision_penalty = contact_base_penalty.any(dim=-1)
@@ -637,14 +783,14 @@ class Turtlebot3TuningEnv(DirectRLEnv):
         contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 0.5
         contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
 
-        joint_diff_penalty = self.joint_rate_l2_ratio()
+        # joint_diff_penalty = self.joint_rate_l2_ratio()
         
         reward = (
             dist_reward_scale * dis_reward
             + self_collision_penalty_scale * self_collision_penalty
             # + contact_ground_penalty_scale * contact_ground_penalty
-            # + action_penalty_scale * actions_penalty
-            + action_penalty_scale * joint_diff_penalty
+            + action_penalty_scale * actions_penalty
+            # + action_penalty_scale * joint_diff_penalty
         )
 
         return reward

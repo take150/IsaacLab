@@ -105,24 +105,24 @@ class EventCfg:
     #     },
     # )
 
-    randomize_joints_gripper = EventTerm(
-        func=mdp.randomize_actuator_gains,
-        mode="reset",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", joint_names=["gripper_left_joint", "gripper_right_joint"]),
-            "stiffness_distribution_params": (600, 600),
-            "damping_distribution_params": (60, 80),
-            "operation": "abs",
-            "distribution": "uniform",
-        },
-    )
+    # randomize_gripper_gain = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot", joint_names=["gripper_left_joint", "gripper_right_joint"]),
+    #         "stiffness_distribution_params": (600, 600),
+    #         "damping_distribution_params": (60, 80),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
 
     randomize_gripper_velocity_limit = EventTerm(
         func=mdp.randomize_actuator_velocity_limit,
         mode="reset",
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=["gripper_left_joint", "gripper_right_joint"]),
-            "distribution_params": (0.005, 0.01),
+            "distribution_params": (0.0075, 0.01),
             "operation": "abs",
             "distribution": "uniform",
         },
@@ -205,8 +205,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("cube", body_names="object"),
-          "static_friction_range": (0.7, 0.9),
-          "dynamic_friction_range": (0.6, 0.8),
+          "static_friction_range": (0.4, 0.6),
+          "dynamic_friction_range": (0.3, 0.5),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -233,6 +233,30 @@ class EventCfg:
             "event_name": "randomize_object_color",
             "asset_cfg": SceneEntityCfg("cube", body_names="object"),
             "colors":  {"r": (0.2, 0.4), "g": (0.0, 0.1), "b": (0.0, 0.1)},
+        }
+    )
+
+    randomize_goal_base_color = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_goal_base_color",
+            "asset_cfg": SceneEntityCfg("goal_base", body_names="goal_base"),
+            "colors":  {"r": (0.0, 0.1), "g": (0.0, 0.1), "b": (0.3, 0.4)},
+            }
+    )
+
+    randomize_goal_color = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_goal_color",
+            "asset_cfg": SceneEntityCfg("goal", body_names="goal"),
+            "colors":  {"r": (0.0, 0.1), "g": (0.0, 0.1), "b": (0.3, 0.4)},
         }
     )
 
@@ -313,7 +337,7 @@ class Turtlebot3SingleDistillationEnvCfg(DirectRLEnvCfg):
     )
 
     # scene
-    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=1024, env_spacing=100.0, replicate_physics=False)
+    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=512, env_spacing=100.0, replicate_physics=False)
 
     # robot
     robot = ArticulationCfg(
@@ -361,8 +385,8 @@ class Turtlebot3SingleDistillationEnvCfg(DirectRLEnvCfg):
                 joint_names_expr=["gripper_.*"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.0075,
-                stiffness=600.0,
-                damping=60.0,
+                stiffness=2000.0,
+                damping=100.0,
             ),
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
@@ -449,6 +473,89 @@ class Turtlebot3SingleDistillationEnvCfg(DirectRLEnvCfg):
             "/World/envs/env_.*/Robot/gripper_left_tip_link",
             "/World/envs/env_.*/Robot/gripper_right_tip_link",
             ],
+    )
+
+    goal_base: RigidObjectCfg = RigidObjectCfg(
+        prim_path="/World/envs/env_.*/goal_base",
+        spawn=sim_utils.MultiAssetSpawnerCfg(
+            assets_cfg=[
+                sim_utils.CuboidCfg(
+                    size=(0.1, 0.2, 0.017),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                # sim_utils.CuboidCfg(
+                #     size=(0.08, 0.07, 0.03),
+                #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                # ),
+                # sim_utils.CuboidCfg(
+                #     size=(0.08, 0.06, 0.03),
+                #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                # ),
+                # sim_utils.CuboidCfg(
+                #     size=(0.08, 0.05, 0.03),
+                #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                # ),
+            ],
+            random_choice=True,
+            activate_contact_sensors=True,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                        kinematic_enabled=True,
+                        solver_position_iteration_count=16,
+                        solver_velocity_iteration_count=1,
+                        max_angular_velocity=1000.0,
+                        max_linear_velocity=1000.0,
+                        max_depenetration_velocity=5.0,
+                        disable_gravity=False,
+                    ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+            # mass_props=sim_utils.MassPropertiesCfg(mass=0.8),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+        ),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0085), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
+
+    goal: RigidObjectCfg = RigidObjectCfg(
+        prim_path="/World/envs/env_.*/goal",
+        spawn=sim_utils.MultiAssetSpawnerCfg(
+            assets_cfg=[
+                sim_utils.CuboidCfg(
+                    size=(0.1, 0.3, 0.017),
+                    # size=(0.5, 0.35, 0.03),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+            ],
+            random_choice=False,
+            activate_contact_sensors=True,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                        kinematic_enabled=True,
+                        solver_position_iteration_count=16,
+                        solver_velocity_iteration_count=1,
+                        max_angular_velocity=1000.0,
+                        max_linear_velocity=1000.0,
+                        max_depenetration_velocity=5.0,
+                        disable_gravity=False,
+                    ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+            # mass_props=sim_utils.MassPropertiesCfg(mass=0.8),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+        ),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0255), rot=(1.0, 0.0, 0.0, 0.0)),
+        # init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.015), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
+
+    contact_robot_goal: ContactSensorCfg = ContactSensorCfg(
+        prim_path="/World/envs/env_.*/goal",
+        update_period=0.0,
+        history_length=0,
+        filter_prim_paths_expr=[
+            "/World/envs/env_.*/Robot/base_link",
+            "/World/envs/env_.*/Robot/gripper_left_link",
+            "/World/envs/env_.*/Robot/gripper_right_link",
+            "/World/envs/env_.*/Robot/link1",
+            "/World/envs/env_.*/Robot/link2",
+            "/World/envs/env_.*/Robot/link3",
+            "/World/envs/env_.*/Robot/link4",
+            "/World/envs/env_.*/Robot/link5"],
     )
 
     ground_plane: RigidObjectCfg = RigidObjectCfg(
@@ -584,6 +691,21 @@ class Turtlebot3SingleDistillationEnvCfg(DirectRLEnvCfg):
         ],
     )
 
+    set_frame = FrameTransformerCfg(
+        prim_path="/World/envs/env_.*/goal",
+        debug_vis=False,
+        visualizer_cfg=marker_cfg,
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="/World/envs/env_.*/goal",
+                name="cube_1_set",
+                offset=OffsetCfg(
+                    pos=[0.0, 0.0, 0.0525],
+                ),
+            ),
+        ],
+    )
+
     camera_frame = FrameTransformerCfg(
         prim_path="/World/envs/env_.*/Robot/base_footprint",
         debug_vis=False,
@@ -655,8 +777,11 @@ class Turtlebot3SingleDistillationEnvCfg(DirectRLEnvCfg):
     dist_reward_scale = 1.0
     lift_reward_scale = 1.0
     action_penalty_scale = -0.15
-    self_collision_penalty_scale = -0.3
+    self_collision_penalty_scale = -0.15
     contact_ground_penalty_scale = 0.0
+    joint_1_penalty_scale = -0.5
+    gripper_penalty_scale = -0.0
+
 
 
 class Turtlebot3SingleDistillationEnv(DirectRLEnv):
@@ -689,6 +814,10 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         self.gripper_ids, _ = self._robot.find_joints(self.gripper_names, preserve_order=False)
         self.wheel_ids, _ = self._robot.find_joints(self.wheel_names, preserve_order=False)
 
+        self.joint_1_ids, _ = self._robot.find_joints("joint1", preserve_order=False)
+        default_joint_1_pos = self._robot.data.default_joint_pos[:, self.joint_1_ids]
+        self.default_joint_1_pos = torch.full_like(default_joint_1_pos, 0.08)
+
         self.robot_arm_targets = torch.zeros((self.num_envs, len(self.arm_ids)), device=self.device)
         self.robot_gripper_targets = torch.zeros((self.num_envs, len(self.gripper_ids)), device=self.device)
         self.robot_wheel_targets = torch.zeros((self.num_envs, len(self.wheel_ids)), device=self.device)
@@ -707,6 +836,9 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         self.log  = torch.ones_like(self.episode_length_buf, dtype=torch.bool)
         self.success_time = torch.full_like(self.episode_length_buf, -1)
 
+        self.over_episode = 0
+        self.gripper_penalty_scale = self.cfg.gripper_penalty_scale
+
         self.csv_path = "success_log.csv"
         with open(self.csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
@@ -718,30 +850,40 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         self._camera = TiledCamera(self.cfg.camera)
         self._contact_base = ContactSensor(self.cfg.contact_base)
         self._contact_gripper_object = ContactSensor(self.cfg.contact_gripper_object)
+        self._contact_robot_goal = ContactSensor(self.cfg.contact_robot_goal)
         # self._contact_leftgripper_ground = ContactSensor(self.cfg.contact_leftgripper_ground)
         # self._contact_rightgripper_ground = ContactSensor(self.cfg.contact_rightgripper_ground)
         self._ee_frame = FrameTransformer(self.cfg.ee_frame)
         self._lee_frame = FrameTransformer(self.cfg.lee_frame)
         self._ree_frame = FrameTransformer(self.cfg.ree_frame)
-        # self._camera_frame = FrameTransformer(self.cfg.camera_frame)
+        self._camera_frame = FrameTransformer(self.cfg.camera_frame)
         self._cube = RigidObject(self.cfg.cube)
         self._object_frame = FrameTransformer(self.cfg.object_frame)
         self._ground_plane = RigidObject(self.cfg.ground_plane)
 
+        self._goal_base = RigidObject(self.cfg.goal_base)
+        self._goal = RigidObject(self.cfg.goal)
+        self._set_frame = FrameTransformer(self.cfg.set_frame)
+        
         self.scene.articulations["robot"] = self._robot
         self.scene.sensors["camera"] = self._camera
         self.scene.sensors["contact_base"] = self._contact_base
         self.scene.sensors["contact_gripper_object"] = self._contact_gripper_object
+        self.scene.sensors["contact_robot_goal"] = self._contact_robot_goal
         # self.scene.sensors["contact_leftgripper_ground"] = self._contact_leftgripper_ground
         # self.scene.sensors["contact_rightgripper_ground"] = self._contact_rightgripper_ground
         self.scene.rigid_objects["cube"] = self._cube
         self.scene.sensors["ee_frame"] = self._ee_frame
         self.scene.sensors["lee_frame"] = self._lee_frame
         self.scene.sensors["ree_frame"] = self._ree_frame
-        # self.scene.sensors["camera_frame"] = self._camera_frame
+        self.scene.sensors["camera_frame"] = self._camera_frame
         self.scene.sensors["object_frame"] = self._object_frame
         self.scene.rigid_objects["ground_plane"] = self._ground_plane
-    
+
+        self.scene.rigid_objects["goal_base"] = self._goal_base
+        self.scene.rigid_objects["goal"] = self._goal
+        self.scene.sensors["set_frame"] = self._set_frame
+        
         self.cfg.terrain.num_envs = self.scene.cfg.num_envs
         self.cfg.terrain.env_spacing = self.scene.cfg.env_spacing
         self._terrain = self.cfg.terrain.class_type(self.cfg.terrain)
@@ -819,12 +961,13 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
             self.ee_pos,
             self.lee_pos,
             self.ree_pos,
-            self.joint_acc,
+            self.joint_1_pos,
             self.cube_pos,
             self.object_pos,
-            # self.camera_to_object_pos,
+            self.camera_to_object_pos,
             self.contact_base,
             self.contact_gripper_object,
+            self.contact_robot_goal,
             # self.contact_leftgripper_ground,
             # self.contact_rightgripper_ground,
             self.cfg.dist_reward_scale,
@@ -832,6 +975,8 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
             self.cfg.action_penalty_scale,
             self.cfg.self_collision_penalty_scale,
             self.cfg.contact_ground_penalty_scale,
+            self.cfg.joint_1_penalty_scale,
+            self.gripper_penalty_scale,
         )
 
     def _reset_idx(self, env_ids: torch.Tensor | None):
@@ -853,18 +998,38 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         self._robot.set_joint_position_target(joint_pos, env_ids=env_ids)
         self._robot.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
 
-        default_cube_state = self._cube.data.default_root_state[env_ids].clone()
-        default_cube_state[:, :3] += self.scene.env_origins[env_ids]
-        positions_delta, orientations_delta= self.reset_root_state_uniform(
+        default_goal_base_state = self._goal_base.data.default_root_state[env_ids, :7].clone()
+        default_goal_base_state[:, :3] += self.scene.env_origins[env_ids]
+        default_goal_base_state[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
-            # pose_range={"x": (-0.25, 0.5), "y": (-0.15, 0.15), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
-            pose_range={"x": (0.25, 0.5), "y": (-0.05, 0.05), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
-            avoid_radius=0.2
+            pose_range = {"x": (0.25, 0.5), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
         )
-        default_cube_state[:, :3] += positions_delta
-        default_cube_state[:, 3:7] = math_utils.quat_mul(default_cube_state[:, 3:7], orientations_delta)
+        default_goal_state = self._goal.data.default_root_state[env_ids, :7].clone()
+        default_goal_state[:, :3] += self.scene.env_origins[env_ids]
+        default_goal_state[:, :2] = default_goal_base_state[:, :2]
+        # default_goal_state[:, :3] += self.reset_root_state_uniform(
+        #     env_ids=env_ids,
+        #     pose_range = {"x": (-0.05, 0.05), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
+        # )
+        self._goal_base.write_root_link_pose_to_sim(default_goal_base_state[:, :7], env_ids=env_ids)
+        self._goal.write_root_link_pose_to_sim(default_goal_state[:, :7], env_ids=env_ids)
+
+        default_cube_state = self._cube.data.default_root_state[env_ids].clone()
+        default_cube_state[:, :3] = self._set_frame.data.target_pos_w[env_ids, 0, :3]
         self._cube.write_root_link_pose_to_sim(default_cube_state[:, :7], env_ids=env_ids)
+
+        # default_cube_state = self._cube.data.default_root_state[env_ids].clone()
+        # default_cube_state[:, :3] += self.scene.env_origins[env_ids]
+        # positions_delta, orientations_delta= self.reset_root_state_uniform(
+        #     env_ids=env_ids,
+        #     # pose_range = {"x": (0.265, 0.265), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
+        #     pose_range={"x": (0.25, 0.5), "y": (-0.05, 0.05), "z": (0.01, 0.01), "yaw": (0.0, 0.0)},
+        #     # pose_range={"x": (0.25, 0.5), "y": (-0.05, 0.05), "z": (0.01, 0.01), "yaw": (0.0, math.pi/2)},
+        #     avoid_radius=0.2
+        # )
+        # default_cube_state[:, :3] += positions_delta
+        # default_cube_state[:, 3:7] = math_utils.quat_mul(default_cube_state[:, 3:7], orientations_delta)
+        # self._cube.write_root_link_pose_to_sim(default_cube_state[:, :7], env_ids=env_ids)
         
         self.joint_list.reset()
         self.action_list.reset()
@@ -897,44 +1062,24 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         if self.reward.mean().item() >= 100:
             self.reward_delay = True
         
+        if self.over_episode < 50:
+            self.gripper_penalty_scale -= 0.02
+            self.over_episode += 1
+        
         self.curr_actions[env_ids] = 0.0
         self.prev_actions[env_ids] = 0.0
         self.reward[env_ids] = 0.0
 
         self._compute_intermediate_values(env_ids)
 
-    def reset_root_state_uniform(
-        self,
-        env_ids,
-        pose_range,
-        avoid_radius: float | None = None,
-    ):
-        keys = ["x", "y", "z", "roll", "pitch", "yaw"]
-        range_list = [pose_range.get(k, (0.0, 0.0)) for k in keys]
+    def reset_root_state_uniform(self, env_ids, pose_range):
+        range_list = [pose_range.get(key, (0.0, 0.0)) for key in ["x", "y", "z", "roll", "pitch", "yaw"]]
         ranges = torch.tensor(range_list, device=self.device)
+        rand_samples = math_utils.sample_uniform(ranges[:, 0], ranges[:, 1], (len(env_ids), 6), device=self.device)
 
-        num_envs = len(env_ids)
-        rand_samples = math_utils.sample_uniform(
-            ranges[:, 0], ranges[:, 1], (num_envs, 6), device=self.device
-        )
+        positions = rand_samples[:, 0:3]
 
-        if avoid_radius is not None and avoid_radius > 0.0:
-            xy = rand_samples[:, 0:2]
-            in_circle = (xy[:, 0] ** 2 + xy[:, 1] ** 2) <= avoid_radius ** 2
-            while in_circle.any():
-                n_resample = int(in_circle.sum().item())
-                xy_new = math_utils.sample_uniform(
-                    ranges[0:2, 0], ranges[0:2, 1], (n_resample, 2), device=self.device
-                )
-                xy[in_circle] = xy_new
-                in_circle = (xy[:, 0] ** 2 + xy[:, 1] ** 2) <= avoid_radius ** 2
-
-        positions_delta = rand_samples[:, 0:3]
-        orientations_delta = math_utils.quat_from_euler_xyz(
-            rand_samples[:, 3], rand_samples[:, 4], rand_samples[:, 5]
-        )
-
-        return positions_delta, orientations_delta
+        return positions
 
     def _get_observations(self) -> dict:
 
@@ -962,6 +1107,7 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
             env_ids = self._robot._ALL_INDICES
 
         self.joint_pos = self._robot.data.joint_pos[:, self.joint_pos_ids]
+        self.joint_1_pos = self._robot.data.joint_pos[:, self.joint_1_ids]
         self.joint_acc = self._robot.data.joint_acc[env_ids][:, self.joint_pos_ids]
         
         self.base_pos = self._robot.data.root_link_state_w[env_ids, :3]
@@ -970,8 +1116,8 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         self.ee_rot = self._ee_frame.data.target_quat_w[env_ids, 0, :]
         self.lee_pos = self._lee_frame.data.target_pos_w[env_ids, 0, :]
         self.ree_pos = self._ree_frame.data.target_pos_w[env_ids, 0, :]
-        # self.camera_pos = self._camera_frame.data.target_pos_w[env_ids, 0, :]
-        # self.camera_rot = self._camera_frame.data.target_quat_w[env_ids, 0, :]
+        self.camera_pos = self._camera_frame.data.target_pos_w[env_ids, 0, :]
+        self.camera_rot = self._camera_frame.data.target_quat_w[env_ids, 0, :]
         
         self.cube_pos = self._cube.data.root_link_pos_w[env_ids, :]
         self.cube_rot = self._cube.data.root_link_state_w[env_ids, 3:7]
@@ -981,6 +1127,7 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         self.contact_gripper_object = self._contact_gripper_object.data.force_matrix_w[env_ids, :]
         # self.contact_leftgripper_ground = self._contact_leftgripper_ground.data.force_matrix_w[env_ids, :]
         # self.contact_rightgripper_ground = self._contact_rightgripper_ground.data.force_matrix_w[env_ids, :]
+        self.contact_robot_goal = self._contact_robot_goal.data.force_matrix_w[env_ids, :]
 
         object_pos_e, object_rot_e = math_utils.subtract_frame_transforms(
             self.ee_pos, self.ee_rot, self.cube_pos, self.cube_rot
@@ -991,28 +1138,31 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         
         self.object_be = torch.cat((object_pos_b, object_rot_b, object_pos_e, object_rot_e), dim=1)      
 
-        # self.camera_to_object_pos, _ = math_utils.subtract_frame_transforms(
-        #     self.camera_pos, self.camera_rot, self.cube_pos, self.cube_rot
-        # )  
+        self.camera_to_object_pos, _ = math_utils.subtract_frame_transforms(
+            self.camera_pos, self.camera_rot, self.cube_pos, self.cube_rot
+        )  
 
     def _compute_rewards(
         self,
         end_effector_pos,
         left_tip_pos,
         right_tip_pos,
-        joint_acc,
+        joint_1_pos,
         cube_pos,
         object_pos,
-        # camera_to_object_pos,
+        camera_to_object_pos,
         contact_base,
         contact_gripper_object,
+        contact_robot_goal,
         # contact_leftgripper_ground,
         # contact_rightgripper_ground,
         dist_reward_scale,
         lift_reward_scale,
         action_penalty_scale,
         self_collision_penalty_scale,
-        contact_ground_penalty_scale
+        contact_ground_penalty_scale,
+        joint_1_penalty_scale,
+        gripper_penalty_scale,
     ):
         
         d_c = torch.norm(object_pos-end_effector_pos, dim=-1)
@@ -1053,25 +1203,34 @@ class Turtlebot3SingleDistillationEnv(DirectRLEnv):
         #     self.log[env_ids] = False
 
         actions_penalty = self.action_rate_l2_ratio()
+        # joint_1_penalty = (self.default_joint_1_pos - joint_1_pos).squeeze() > 0.0
         # joint_1_penalty = torch.tanh(5*torch.abs(joint_1_pos-self.default_joint_1_pos)).squeeze()
-        # joint_1_penalty = torch.abs(torch.atan2(camera_to_object_pos[:, 1], camera_to_object_pos[:, 0]))
-        # print(joint_1_penalty)
+        joint_1_penalty = torch.abs(torch.atan2(camera_to_object_pos[:, 1], camera_to_object_pos[:, 0]))
         # actions_penalty = torch.mean(torch.abs(joint_acc), dim=-1)
         # print(actions_penalty)
 
         contact_base_penalty = torch.norm(contact_base, dim=-1).squeeze() > 1.0
         self_collision_penalty = contact_base_penalty.any(dim=-1)
+        contact_goal = torch.norm(contact_robot_goal, dim=-1).squeeze() > 1.0
+        contact_goal_penalty = contact_goal.any(dim=-1)
+        
+        gripper_penalty = torch.where(d_c >= 0.02, 1.0, 0.0) * (self.curr_actions[:, len(self.arm_ids)] < 0)
         
         # contact_left_ground_penalty = torch.norm(contact_leftgripper_ground, dim=-1).squeeze() > 1.0
         # contact_right_ground_penalty = torch.norm(contact_rightgripper_ground, dim=-1).squeeze() > 1.0
         # contact_ground_penalty = contact_left_ground_penalty | contact_right_ground_penalty
-    
+        camera_dis_penalty = torch.norm(camera_to_object_pos, dim=-1) < 0.125
+
         reward = (
             dist_reward_scale * dis_reward
             + lift_reward_scale * lift_reward
             + self_collision_penalty_scale * self_collision_penalty
             # + contact_ground_penalty_scale * contact_ground_penalty
             + action_penalty_scale * actions_penalty
+            + joint_1_penalty_scale * joint_1_penalty
+            + gripper_penalty_scale * contact_goal_penalty
+            + gripper_penalty_scale * gripper_penalty
+            + gripper_penalty_scale * camera_dis_penalty
         )
 
         self.reward += reward * (self.episode_length_buf <= (self.max_episode_length - 1) / 2)

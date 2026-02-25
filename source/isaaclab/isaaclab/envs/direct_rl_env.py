@@ -220,6 +220,9 @@ class DirectRLEnv(gym.Env):
             self._observation_noise_model_joint4: NoiseModel = self.cfg.observation_noise_model_joint4.class_type(
                 self.cfg.observation_noise_model_joint4, num_envs=self.num_envs, device=self.device
             )
+            self._observation_noise_model_gripper: NoiseModel = self.cfg.observation_noise_model_gripper.class_type(
+                self.cfg.observation_noise_model_gripper, num_envs=self.num_envs, device=self.device
+            )
             self._observation_noise_model_rgb: NoiseModel = self.cfg.observation_noise_model_rgb.class_type(
                 self.cfg.observation_noise_model_rgb, num_envs=self.num_envs, device=self.device
             )
@@ -365,6 +368,7 @@ class DirectRLEnv(gym.Env):
             self.robot_arm_targets[:, 1] = self._action_noise_model_joint2.apply(self.robot_arm_targets[:, 1])
             self.robot_arm_targets[:, 2] = self._action_noise_model_joint3.apply(self.robot_arm_targets[:, 2])
             self.robot_arm_targets[:, 3] = self._action_noise_model_joint4.apply(self.robot_arm_targets[:, 3])
+            self.robot_wheel_targets[:] = self._action_noise_model_wheel.apply(self.robot_wheel_targets[:, :])
 
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop
@@ -425,6 +429,7 @@ class DirectRLEnv(gym.Env):
             self.obs_buf["joint"][:, 1] = self._observation_noise_model_joint2.apply(self.obs_buf["joint"][:, 1])
             self.obs_buf["joint"][:, 2] = self._observation_noise_model_joint3.apply(self.obs_buf["joint"][:, 2])
             self.obs_buf["joint"][:, 3] = self._observation_noise_model_joint4.apply(self.obs_buf["joint"][:, 3])
+            self.obs_buf["joint"][:, -2:] = self._observation_noise_model_gripper.apply(self.obs_buf["joint"][:, -2:])
             # self.obs_buf["rgb"] = self._observation_noise_model_rgb.apply(self.obs_buf["rgb"])
 
         # return observations, rewards, resets and extras
@@ -636,6 +641,7 @@ class DirectRLEnv(gym.Env):
             self._observation_noise_model_joint2.reset(env_ids)
             self._observation_noise_model_joint3.reset(env_ids)
             self._observation_noise_model_joint4.reset(env_ids)
+            self._observation_noise_model_gripper.reset(env_ids)
             self._observation_noise_model_rgb.reset(env_ids)
 
         # reset the episode length buffer

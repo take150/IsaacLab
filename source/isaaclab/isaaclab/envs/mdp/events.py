@@ -389,14 +389,17 @@ def randomize_actuator_gains(
             global_indices = actuator_indices = torch.tensor(asset_cfg.joint_ids, device=asset.device)
         else:
             # we take the intersection of the actuator joints and the asset config joints
-            actuator_joint_indices = torch.tensor(actuator.joint_indices, device=asset.device)
-            asset_joint_ids = torch.tensor(asset_cfg.joint_ids, device=asset.device)
+            # actuator_joint_indices = torch.tensor(actuator.joint_indices, device=asset.device)
+            # asset_joint_ids = torch.tensor(asset_cfg.joint_ids, device=asset.device)
+            actuator_joint_indices = actuator.joint_indices.clone().detach().to(asset.device)
+            asset_joint_ids = torch.as_tensor(asset_cfg.joint_ids, device=asset.device)
             # the indices of the joints in the actuator that have to be randomized
             actuator_indices = torch.nonzero(torch.isin(actuator_joint_indices, asset_joint_ids)).view(-1)
             if len(actuator_indices) == 0:
                 continue
             # maps actuator indices that have to be randomized to global joint indices
             global_indices = actuator_joint_indices[actuator_indices]
+
         # Randomize stiffness
         if stiffness_distribution_params is not None:
             stiffness = actuator.stiffness[env_ids].clone()
@@ -414,6 +417,57 @@ def randomize_actuator_gains(
             if isinstance(actuator, ImplicitActuator):
                 asset.write_joint_damping_to_sim(damping, joint_ids=actuator.joint_indices, env_ids=env_ids)
 
+def randomize_actuator_velocity_limit(
+    env: ManagerBasedEnv,
+    env_ids: torch.Tensor | None,
+    asset_cfg: SceneEntityCfg,
+    distribution_params: tuple[float, float] | None = None,
+    operation: Literal["add", "scale", "abs"] = "abs",
+    distribution: Literal["uniform", "log_uniform", "gaussian"] = "uniform",
+):
+    # Extract the used quantities (to enable type-hinting)
+    asset: Articulation = env.scene[asset_cfg.name]
+
+    # Resolve environment ids
+    if env_ids is None:
+        env_ids = torch.arange(env.scene.num_envs, device=asset.device)
+
+    def randomize(data: torch.Tensor, params: tuple[float, float]) -> torch.Tensor:
+        return _randomize_prop_by_op(
+            data, params, dim_0_ids=None, dim_1_ids=actuator_indices, operation=operation, distribution=distribution
+        )
+
+    # Loop through actuators and randomize gains
+    for actuator in asset.actuators.values():
+        if isinstance(asset_cfg.joint_ids, slice):
+            # we take all the joints of the actuator
+            actuator_indices = slice(None)
+            if isinstance(actuator.joint_indices, slice):
+                global_indices = slice(None)
+            else:
+                global_indices = torch.tensor(actuator.joint_indices, device=asset.device)
+        elif isinstance(actuator.joint_indices, slice):
+            # we take the joints defined in the asset config
+            global_indices = actuator_indices = torch.tensor(asset_cfg.joint_ids, device=asset.device)
+        else:
+            # we take the intersection of the actuator joints and the asset config joints
+            # actuator_joint_indices = torch.tensor(actuator.joint_indices, device=asset.device)
+            # asset_joint_ids = torch.tensor(asset_cfg.joint_ids, device=asset.device)
+            actuator_joint_indices = actuator.joint_indices.clone().detach().to(asset.device)
+            asset_joint_ids = torch.as_tensor(asset_cfg.joint_ids, device=asset.device)
+            # the indices of the joints in the actuator that have to be randomized
+            actuator_indices = torch.nonzero(torch.isin(actuator_joint_indices, asset_joint_ids)).view(-1)
+            if len(actuator_indices) == 0:
+                continue
+            # maps actuator indices that have to be randomized to global joint indices
+            global_indices = actuator_joint_indices[actuator_indices]
+        # Randomize velocity limit
+        if distribution_params is not None:
+            velocity_limit = actuator.velocity_limit_sim[env_ids].clone()
+            randomize(velocity_limit, distribution_params)
+            actuator.velocity_limit_sim[env_ids] = velocity_limit
+            if isinstance(actuator, ImplicitActuator):
+                asset.write_joint_velocity_limit_to_sim(velocity_limit, joint_ids=actuator.joint_indices, env_ids=env_ids)
 
 def randomize_joint_parameters(
     env: ManagerBasedEnv,

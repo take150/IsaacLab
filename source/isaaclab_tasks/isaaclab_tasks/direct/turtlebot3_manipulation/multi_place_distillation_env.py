@@ -337,114 +337,114 @@ class EventCfg:
       },
     )
 
-    # randomize_object_color_1 = EventTerm(
-    #     func=mdp.randomize_visual_color,
-    #     mode="interval",
-    #     interval_range_s=(2.5, 4.0),
-    #     is_global_time=True,
-    #     params={
-    #         "event_name": "randomize_object_color_1",
-    #         "asset_cfg": SceneEntityCfg("cube_1", body_names="object_1"),
-    #         "colors":  {"r": (0.3, 0.4), "g": (0.0, 0.1), "b": (0.0, 0.1)},
-    #     }
-    # )
+    randomize_object_color_1 = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_object_color_1",
+            "asset_cfg": SceneEntityCfg("cube_1", body_names="object_1"),
+            "colors":  {"r": (0.3, 0.4), "g": (0.0, 0.1), "b": (0.0, 0.1)},
+        }
+    )
 
-    # randomize_object_color_2 = EventTerm(
-    #     func=mdp.randomize_visual_color,
-    #     mode="interval",
-    #     interval_range_s=(2.5, 4.0),
-    #     is_global_time=True,
-    #     params={
-    #         "event_name": "randomize_object_color_2",
-    #         "asset_cfg": SceneEntityCfg("cube_2", body_names="object_2"),
-    #         "colors":  {"r": (0.3, 0.4), "g": (0.0, 0.1), "b": (0.0, 0.1)},
-    #         # "colors":  {"r": (0.0, 0.1), "g": (0.3, 0.4), "b": (0.0, 0.1)},
-    #     }
-    # )
+    randomize_object_color_2 = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_object_color_2",
+            "asset_cfg": SceneEntityCfg("cube_2", body_names="object_2"),
+            "colors":  {"r": (0.3, 0.4), "g": (0.0, 0.1), "b": (0.0, 0.1)},
+            # "colors":  {"r": (0.0, 0.1), "g": (0.3, 0.4), "b": (0.0, 0.1)},
+        }
+    )
     
-    # randomize_goal_base_color = EventTerm(
-    #     func=mdp.randomize_visual_color,
-    #     mode="interval",
-    #     interval_range_s=(2.5, 4.0),
-    #     is_global_time=True,
-    #     params={
-    #         "event_name": "randomize_goal_base_color",
-    #         "asset_cfg": SceneEntityCfg("goal_base", body_names="goal_base"),
-    #         "colors":  {"r": (0.0, 0.1), "g": (0.0, 0.1), "b": (0.3, 0.4)},
-    #         }
-    # )
+    randomize_goal_base_color = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_goal_base_color",
+            "asset_cfg": SceneEntityCfg("goal_base", body_names="goal_base"),
+            "colors":  {"r": (0.0, 0.1), "g": (0.0, 0.1), "b": (0.3, 0.4)},
+            }
+    )
 
-    # randomize_goal_color = EventTerm(
-    #     func=mdp.randomize_visual_color,
-    #     mode="interval",
-    #     interval_range_s=(2.5, 4.0),
-    #     is_global_time=True,
-    #     params={
-    #         "event_name": "randomize_goal_color",
-    #         "asset_cfg": SceneEntityCfg("goal", body_names="goal"),
-    #         "colors":  {"r": (0.0, 0.1), "g": (0.0, 0.1), "b": (0.3, 0.4)},
-    #     }
-    # )
+    randomize_goal_color = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_goal_color",
+            "asset_cfg": SceneEntityCfg("goal", body_names="goal"),
+            "colors":  {"r": (0.0, 0.1), "g": (0.0, 0.1), "b": (0.3, 0.4)},
+        }
+    )
 
-    # randomize_terrain_color = EventTerm(
-    #     func=mdp.randomize_visual_color,
-    #     mode="interval",
-    #     interval_range_s=(2.5, 4.0),
-    #     is_global_time=True,
-    #     params={
-    #         "event_name": "randomize_terrain_color",
-    #         "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground_color"),
-    #         "colors":  {"r": (0.3, 0.6), "g": (0.3, 0.6), "b": (0.3, 0.6)},
-    #     }
-    # )
+    randomize_terrain_color = EventTerm(
+        func=mdp.randomize_visual_color,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_terrain_color",
+            "asset_cfg": SceneEntityCfg("ground_plane", body_names="ground_color"),
+            "colors":  {"r": (0.3, 0.6), "g": (0.3, 0.6), "b": (0.3, 0.6)},
+        }
+    )
 
-    # randomize_dome_light = EventTerm(
-    #     func=mdp.randomize_dome_light,
-    #     mode="interval",
-    #     interval_range_s=(2.5, 4.0),
-    #     is_global_time=True,
-    #     params={
-    #         "event_name": "randomize_dome_light",
-    #         "light_paths": ["/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/abandoned_garage_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blinds_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blocky_photo_studio_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/boma_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blue_photo_studio_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_01_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_02_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/carpentry_shop_02_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/cinema_hall_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/climbing_gym_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/creepy_bathroom_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/empty_play_room_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/gym_01_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hall_of_finfish_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hall_of_mammals_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hangar_interior_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/mirrored_hall_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/metro_noord_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/modern_bathroom_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/photo_studio_loft_hall_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/poly_haven_studio_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/rostock_laage_airport_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/sepulchral_chapel_basement_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_1_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_3_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/studio_small_09_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_night_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/whale_skeleton_4k.hdr",
-    #                         "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/zwartkops_pit_4k.hdr",
-    #                         ],
-    #         "light_rotation": [(0.0, 0.0, 0.0), (0.0, 0.0, math.pi * 2)]
-    #     }
-    # )
+    randomize_dome_light = EventTerm(
+        func=mdp.randomize_dome_light,
+        mode="interval",
+        interval_range_s=(2.5, 4.0),
+        is_global_time=True,
+        params={
+            "event_name": "randomize_dome_light",
+            "light_paths": ["/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/abandoned_garage_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blinds_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blocky_photo_studio_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/boma_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/blue_photo_studio_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_01_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/brown_photostudio_02_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/carpentry_shop_02_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/cinema_hall_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/climbing_gym_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/creepy_bathroom_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/empty_play_room_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/gym_01_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hall_of_finfish_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hall_of_mammals_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/hangar_interior_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/mirrored_hall_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/metro_noord_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/modern_bathroom_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/photo_studio_loft_hall_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/poly_haven_studio_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/rostock_laage_airport_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/sepulchral_chapel_basement_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_1_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/small_empty_room_3_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/studio_small_09_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/warm_restaurant_night_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/whale_skeleton_4k.hdr",
+                            "/home/takenami/IsaacLab/source/isaaclab_assets/data/Backgrounds/4k_hdr_20/zwartkops_pit_4k.hdr",
+                            ],
+            "light_rotation": [(0.0, 0.0, 0.0), (0.0, 0.0, math.pi * 2)]
+        }
+    )
 
 
 @configclass
 class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     # env
-    episode_length_s = 40.1  # 1500 timesteps
+    episode_length_s = 30.1  # 1500 timesteps
     decimation = 25
     seed = 0
 
@@ -462,7 +462,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     )
 
     # scene
-    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=2048, env_spacing=3, replicate_physics=False)
+    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=512, env_spacing=100, replicate_physics=False)
 
     # robot
     robot_1 = ArticulationCfg(
@@ -498,11 +498,9 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
                 joint_names_expr=["joint[1-4]"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.2,
-                # stiffness={"joint1": 100, "joint2": 60, "joint3": 60, "joint4": 80},
-                # damping={"joint1": 10, "joint2": 6, "joint3": 6, "joint4": 8},
                 stiffness=200,
                 damping=10,
-                # friction=0.2,
+                # friction=0.05,
                 # armature=0.0075
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
@@ -524,17 +522,17 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
         },
     )
 
-    # camera_1: TiledCameraCfg = TiledCameraCfg(
-    #     prim_path="/World/envs/env_.*/Robot_1/base_footprint/front_cam",
-    #     update_period=0.03,
-    #     offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.041), rot=(0.99756405, 0.0, 0.06975647, 0.0), convention="world"),
-    #     data_types=["rgb"],
-    #     spawn=sim_utils.PinholeCameraCfg(
-    #         focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
-    #     ),
-    #     width=120,
-    #     height=120,
-    # )
+    camera_1: TiledCameraCfg = TiledCameraCfg(
+        prim_path="/World/envs/env_.*/Robot_1/base_footprint/front_cam",
+        update_period=0.03,
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.041), rot=(0.99756405, 0.0, 0.06975647, 0.0), convention="world"),
+        data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
+        ),
+        width=120,
+        height=120,
+    )
 
     contact_base_1: ContactSensorCfg = ContactSensorCfg(
         prim_path="/World/envs/env_.*/Robot_1/base_link",
@@ -608,17 +606,17 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
         },
     )
 
-    # camera_2: TiledCameraCfg = TiledCameraCfg(
-    #     prim_path="/World/envs/env_.*/Robot_2/base_footprint/front_cam",
-    #     update_period=0.03,
-    #     offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.041), rot=(0.99756405, 0.0, 0.06975647, 0.0), convention="world"),
-    #     data_types=["rgb"],
-    #     spawn=sim_utils.PinholeCameraCfg(
-    #         focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
-    #     ),
-    #     width=120,
-    #     height=120,
-    # )
+    camera_2: TiledCameraCfg = TiledCameraCfg(
+        prim_path="/World/envs/env_.*/Robot_2/base_footprint/front_cam",
+        update_period=0.03,
+        offset=TiledCameraCfg.OffsetCfg(pos=(0.076, 0.068, 0.041), rot=(0.99756405, 0.0, 0.06975647, 0.0), convention="world"),
+        data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=0.304, focus_distance=0.927, horizontal_aperture=0.45, vertical_aperture=4.5, clipping_range=(0.01, 20.0)
+        ),
+        width=120,
+        height=120,
+    )
 
     contact_base_2: ContactSensorCfg = ContactSensorCfg(
         prim_path="/World/envs/env_.*/Robot_2/base_link",
@@ -734,45 +732,45 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
             ],
     )
 
-    # goal_base: RigidObjectCfg = RigidObjectCfg(
-    #     prim_path="/World/envs/env_.*/goal_base",
-    #     spawn=sim_utils.MultiAssetSpawnerCfg(
-    #         assets_cfg=[
-    #             sim_utils.CuboidCfg(
-    #                 # size=(0.15, 0.15, 0.015),
-    #                 size=(0.5, 0.35, 0.015),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
-    #             ),
-    #             # sim_utils.CuboidCfg(
-    #             #     size=(0.08, 0.07, 0.03),
-    #             #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             # ),
-    #             # sim_utils.CuboidCfg(
-    #             #     size=(0.08, 0.06, 0.03),
-    #             #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             # ),
-    #             # sim_utils.CuboidCfg(
-    #             #     size=(0.08, 0.05, 0.03),
-    #             #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             # ),
-    #         ],
-    #         random_choice=False,
-    #         activate_contact_sensors=True,
-    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
-    #                     kinematic_enabled=True,
-    #                     solver_position_iteration_count=16,
-    #                     solver_velocity_iteration_count=1,
-    #                     max_angular_velocity=1000.0,
-    #                     max_linear_velocity=1000.0,
-    #                     max_depenetration_velocity=5.0,
-    #                     disable_gravity=False,
-    #                 ),
-    #         mass_props=sim_utils.MassPropertiesCfg(mass=10.0),
-    #         # mass_props=sim_utils.MassPropertiesCfg(mass=0.8),
-    #         collision_props=sim_utils.CollisionPropertiesCfg(),
-    #     ),
-    #     init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0), rot=(1.0, 0.0, 0.0, 0.0)),
-    # )
+    goal_base: RigidObjectCfg = RigidObjectCfg(
+        prim_path="/World/envs/env_.*/goal_base",
+        spawn=sim_utils.MultiAssetSpawnerCfg(
+            assets_cfg=[
+                sim_utils.CuboidCfg(
+                    # size=(0.15, 0.15, 0.015),
+                    size=(0.1, 0.2, 0.018),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
+                ),
+                # sim_utils.CuboidCfg(
+                #     size=(0.08, 0.07, 0.03),
+                #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                # ),
+                # sim_utils.CuboidCfg(
+                #     size=(0.08, 0.06, 0.03),
+                #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                # ),
+                # sim_utils.CuboidCfg(
+                #     size=(0.08, 0.05, 0.03),
+                #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                # ),
+            ],
+            random_choice=False,
+            activate_contact_sensors=True,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                        kinematic_enabled=True,
+                        solver_position_iteration_count=16,
+                        solver_velocity_iteration_count=1,
+                        max_angular_velocity=1000.0,
+                        max_linear_velocity=1000.0,
+                        max_depenetration_velocity=5.0,
+                        disable_gravity=False,
+                    ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=10.0),
+            # mass_props=sim_utils.MassPropertiesCfg(mass=0.8),
+            collision_props=sim_utils.CollisionPropertiesCfg(),
+        ),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.009), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
 
     goal: RigidObjectCfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/goal",
@@ -780,7 +778,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
             assets_cfg=[
                 sim_utils.CuboidCfg(
                     # size=(0.1, 0.3, 0.015),
-                    size=(0.3, 0.5, 0.036),
+                    size=(0.3, 0.1, 0.018),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
                 ),
             ],
@@ -800,7 +798,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
         # init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.045), rot=(1.0, 0.0, 0.0, 0.0)),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.017), rot=(1.0, 0.0, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.027), rot=(1.0, 0.0, 0.0, 0.0)),
     )
 
     contact_robot_goal_1: ContactSensorCfg = ContactSensorCfg(
@@ -850,47 +848,47 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     )
 
     # # ground plane
-    # ground_plane: RigidObjectCfg = RigidObjectCfg(
-    #     prim_path="/World/envs/env_.*/ground_color",
-    #     spawn=sim_utils.AssetSpawnerCfg(
-    #         assets_cfg=[
-    #             sim_utils.CuboidCfg(
-    #                 size=(3.5, 3.5, 0.01),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             ),
-    #             sim_utils.CuboidCfg(
-    #                 size=(4.0, 4.0, 0.01),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             ),
-    #             sim_utils.CuboidCfg(
-    #                 size=(6.0, 6.0, 0.01),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             ),
-    #             sim_utils.CuboidCfg(
-    #                 size=(8.0, 8.0, 0.01),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             ),
-    #             sim_utils.CuboidCfg(
-    #                 size=(10.0, 10.0, 0.01),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             ),
-    #             sim_utils.CuboidCfg(
-    #                 size=(15.0, 15.0, 0.01),
-    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-    #             ),
-    #         ],
-    #         # random_choice=True,
-    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
-    #                 disable_gravity=False,
-    #                 kinematic_enabled=True,
-    #             ),
-    #         mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
-    #         collision_props=sim_utils.CollisionPropertiesCfg(
-    #             collision_enabled=False
-    #         ),
-    #     ),
-    #     init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, -0.005), rot=(1.0, 0.0, 0.0, 0.0)),
-    # )
+    ground_plane: RigidObjectCfg = RigidObjectCfg(
+        prim_path="/World/envs/env_.*/ground_color",
+        spawn=sim_utils.MultiAssetSpawnerCfg(
+            assets_cfg=[
+                sim_utils.CuboidCfg(
+                    size=(2.0, 2.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(3.5, 3.5, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(4.0, 4.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(6.0, 6.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(8.0, 8.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(10.0, 10.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+            ],
+            # random_choice=True,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                    disable_gravity=False,
+                    kinematic_enabled=True,
+                ),
+            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+            collision_props=sim_utils.CollisionPropertiesCfg(
+                collision_enabled=False
+            ),
+        ),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, -0.005), rot=(1.0, 0.0, 0.0, 0.0)),
+    )
 
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
@@ -1035,7 +1033,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="cube_1_set",
                 offset=OffsetCfg(
-                    pos=[-0.12, 0.0, 0.068],
+                    pos=[-0.12, 0.0, 0.04],
                 ),
             ),
         ],
@@ -1050,7 +1048,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="cube_2_set",
                 offset=OffsetCfg(
-                    pos=[0.12, 0.0, 0.068],
+                    pos=[0.12, 0.0, 0.04],
                     rot=[0.0, 0.0, 0.0, 1.0]
                 ),
             ),
@@ -1094,13 +1092,12 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     possible_agents = ["robot_1", "robot_2"]
     action_spaces = {"robot_1": 7, "robot_2": 7}
     observation_spaces = {
-        "robot_1": {"task_id": 1, "joint": [5, 6], "object": [5, 14], "goal": [5, 7], "actions": [5, 7], "joint_other": [5, 6], "object_other": [5, 14], "goal_other": [5, 7], "actions_other": [5, 7]},
-        "robot_2": {"task_id": 1, "joint": [5, 6], "object": [5, 14], "goal": [5, 7], "actions": [5, 7], "joint_other": [5, 6], "object_other": [5, 14], "goal_other": [5, 7], "actions_other": [5, 7]},
+        "robot_1": {"task_id": 1, "joint": [5, 6], "rgb": [camera_1.height, camera_1.width, 3], "object": [5, 14], "goal": [5, 7], "actions": [5, 7], "joint_other": [5, 6], "object_other": [5, 14], "goal_other": [5, 7], "actions_other": [5, 7]},
+        "robot_2": {"task_id": 1, "joint": [5, 6], "rgb": [camera_1.height, camera_1.width, 3], "object": [5, 14], "goal": [5, 7], "actions": [5, 7], "joint_other": [5, 6], "object_other": [5, 14], "goal_other": [5, 7], "actions_other": [5, 7]},
         }
     
     state_space = 54
 
-    # observation noise
     # observation noise
     observation_noise_model = True
     observation_noise_model_joint1: dict[AgentID, noise_utils.NoiseModelCfg] = {
@@ -1151,6 +1148,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
         for agent in possible_agents
     }
 
+
     action_scale = 1.0
     dof_velocity_scale = 0.1
 
@@ -1166,8 +1164,8 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     self_collision_penalty_scale = -0.15
     contact_ground_penalty_scale = 0.0
     contact_goal_penalty_scale = -0.15
-    touch_penalty_scale = -0.25
-    dist_g_penalty_scale = -0.1
+    touch_penalty_scale = 0.0
+    dist_g_penalty_scale = 0.0
     # touch_penalty_scale = -0.25
     # dist_g_penalty_scale = -1.0
 
@@ -1306,7 +1304,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
 
     def _setup_scene(self):
         self._robot_1 = Articulation(self.cfg.robot_1)
-        # self._camera_1 = TiledCamera(self.cfg.camera_1)
+        self._camera_1 = TiledCamera(self.cfg.camera_1)
         self._contact_base_1 = ContactSensor(self.cfg.contact_base_1)
         self._contact_gripper_object_1 = ContactSensor(self.cfg.contact_gripper_object_1)
         self._contact_robot_goal_1 = ContactSensor(self.cfg.contact_robot_goal_1)
@@ -1316,7 +1314,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         self._camera_frame_1 = FrameTransformer(self.cfg.camera_frame_1)
 
         self._robot_2 = Articulation(self.cfg.robot_2)
-        # self._camera_2 = TiledCamera(self.cfg.camera_2)
+        self._camera_2 = TiledCamera(self.cfg.camera_2)
         self._contact_base_2 = ContactSensor(self.cfg.contact_base_2)
         self._contact_gripper_object_2 = ContactSensor(self.cfg.contact_gripper_object_2)
         self._contact_robot_goal_2 = ContactSensor(self.cfg.contact_robot_goal_2)
@@ -1328,9 +1326,9 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         self._cube_1 = RigidObject(self.cfg.cube_1)
         self._cube_2 = RigidObject(self.cfg.cube_2)
 
-        # self._ground_plane = RigidObject(self.cfg.ground_plane)
+        self._ground_plane = RigidObject(self.cfg.ground_plane)
 
-        # self._goal_base = RigidObject(self.cfg.goal_base)
+        self._goal_base = RigidObject(self.cfg.goal_base)
         self._goal = RigidObject(self.cfg.goal)
         self._goal_frame_1 = FrameTransformer(self.cfg.goal_frame_1)
         self._goal_frame_2 = FrameTransformer(self.cfg.goal_frame_2)
@@ -1343,7 +1341,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
 
         # ロボットをシーンに追加
         self.scene.articulations["robot_1"] = self._robot_1
-        # self.scene.sensors["camera_1"] = self._camera_1
+        self.scene.sensors["camera_1"] = self._camera_1
         self.scene.sensors["contact_base_1"] = self._contact_base_1
         self.scene.sensors["contact_gripper_object_1"] = self._contact_gripper_object_1
         self.scene.sensors["contact_robot_goal_1"] = self._contact_robot_goal_1
@@ -1353,7 +1351,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         self.scene.sensors["camera_frame_1"] = self._camera_frame_1
 
         self.scene.articulations["robot_2"] = self._robot_2
-        # self.scene.sensors["camera_2"] = self._camera_2
+        self.scene.sensors["camera_2"] = self._camera_2
         self.scene.sensors["contact_base_2"] = self._contact_base_2
         self.scene.sensors["contact_gripper_object_2"] = self._contact_gripper_object_2
         self.scene.sensors["contact_robot_goal_2"] = self._contact_robot_goal_2
@@ -1365,9 +1363,9 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         self.scene.rigid_objects["cube_1"] = self._cube_1
         self.scene.rigid_objects["cube_2"] = self._cube_2
 
-        # self.scene.rigid_objects["ground_plane"] = self._ground_plane
+        self.scene.rigid_objects["ground_plane"] = self._ground_plane
 
-        # self.scene.rigid_objects["goal_base"] = self._goal_base
+        self.scene.rigid_objects["goal_base"] = self._goal_base
         self.scene.rigid_objects["goal"] = self._goal
         self.scene.sensors["goal_frame_1"] = self._goal_frame_1
         self.scene.sensors["goal_frame_2"] = self._goal_frame_2
@@ -1383,23 +1381,20 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         self.scene.clone_environments(copy_from_source=False)
         self.scene.filter_collisions(global_prim_paths=[self.cfg.terrain.prim_path])
 
-        # omni.kit.commands.execute(
-        #     "ToggleVisibilitySelectedPrims",
-        #     selected_paths=["/World/ground"]
-        # )
-
-        light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
-        light_cfg.func("/World/Light", light_cfg)
+        omni.kit.commands.execute(
+            "ToggleVisibilitySelectedPrims",
+            selected_paths=["/World/ground"]
+        )
 
     def _pre_physics_step(self, actions: torch.Tensor):
         arm_actions_1 = actions["robot_1"][:, :len(self.arm_ids_1)].clone().clamp(-1.0, 1.0)
         gripper_action_1 = actions["robot_1"][:, len(self.arm_ids_1)].clone().clamp(-1.0, 1.0) 
-        gripper_action_1[self.task_id_1==1] = -1.0
+        # gripper_action_1[self.task_id_1==1] = -1.0
         wheel_actions_1 = actions["robot_1"][:, len(self.arm_ids_1)+1:].clone().clamp(-1.0, 1.0)
 
         arm_actions_2 = actions["robot_2"][:, :len(self.arm_ids_2)].clone().clamp(-1.0, 1.0)
         gripper_action_2 = actions["robot_2"][:, len(self.arm_ids_2)].clone().clamp(-1.0, 1.0) 
-        gripper_action_2[self.task_id_2==1] = -1.0        
+        # gripper_action_2[self.task_id_2==1] = -1.0        
         wheel_actions_2 = actions["robot_2"][:, len(self.arm_ids_2)+1:].clone().clamp(-1.0, 1.0)
 
         arm_targets_1 = self._robot_1.data.joint_pos[:, self.arm_ids_1] + self.robot_dof_vel_limits_tensor_1[self.arm_ids_1] * self.dt * arm_actions_1
@@ -1555,7 +1550,8 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         default_robot_state_2[:, :3] += self.scene.env_origins[env_ids]
         default_robot_state_2[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            pose_range = {"x": (1.36, 1.36), "y": (0.0, 0.0), "z": (0.0, 0.0)},
+            # pose_range = {"x": (1.34, 1.34), "y": (0.0, 0.0), "z": (0.0, 0.0)},
+            pose_range = {"x": (1.14, 1.14), "y": (0.0, 0.0), "z": (0.0, 0.0)},
             # pose_range = {"x": (0.0, 0.0), "y": (-5.0, -5.0), "z": (0.001, 0.001)},
         )
         self._robot_2.write_root_link_pose_to_sim(default_robot_state_2[:, :7], env_ids=env_ids)
@@ -1563,21 +1559,22 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         self._robot_2.set_joint_position_target(joint_pos_2, env_ids=env_ids)
         self._robot_2.write_joint_state_to_sim(joint_pos_2, joint_vel_2, env_ids=env_ids)
 
-        # default_goal_base_state = self._goal_base.data.default_root_state[env_ids, :7].clone()
-        # default_goal_base_state[:, :3] += self.scene.env_origins[env_ids]
-        # default_goal_base_state[:, :3] += self.reset_root_state_uniform(
-        #     env_ids=env_ids,
-        #     pose_range = {"x": (-0.05, 0.05), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
-        # )
+        default_goal_base_state = self._goal_base.data.default_root_state[env_ids, :7].clone()
+        default_goal_base_state[:, :3] += self.scene.env_origins[env_ids]
+        default_goal_base_state[:, :3] += self.reset_root_state_uniform(
+            env_ids=env_ids,
+            # pose_range = {"x": (0.62, 0.72), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
+            pose_range = {"x": (0.67, 0.67), "y": (-0.0, 0.0), "z": (0.001, 0.001)},        
+        )
         default_goal_state = self._goal.data.default_root_state[env_ids, :7].clone()
         default_goal_state[:, :3] += self.scene.env_origins[env_ids]
-        # default_goal_state[:, :2] = default_goal_base_state[:, :2]
-        default_goal_state[:, :3] += self.reset_root_state_uniform(
-            env_ids=env_ids,
-            # pose_range = {"x": (1.5, 1.6), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
-            pose_range = {"x": (0.62, 0.82), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
-        )
-        # self._goal_base.write_root_link_pose_to_sim(default_goal_base_state[:, :7], env_ids=env_ids)
+        default_goal_state[:, :2] = default_goal_base_state[:, :2]
+        # default_goal_state[:, :3] += self.reset_root_state_uniform(
+        #     env_ids=env_ids,
+        #     # pose_range = {"x": (1.5, 1.6), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
+        #     pose_range = {"x": (0.73, 0.83), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
+        # )
+        self._goal_base.write_root_link_pose_to_sim(default_goal_base_state[:, :7], env_ids=env_ids)
         self._goal.write_root_link_pose_to_sim(default_goal_state[:, :7], env_ids=env_ids)
 
         # default_cube_state_1 = self._cube_1.data.default_root_state[env_ids].clone()
@@ -1592,8 +1589,8 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         default_cube_state_1[:, :3] += self.scene.env_origins[env_ids]
         default_cube_state_1[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            pose_range = {"x": (0.25, 0.4), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
-            # pose_range = {"x": (-0.05, 0.05), "y": (-0.75, -0.5), "z": (0.01, 0.01)},
+            # pose_range = {"x": (0.25, 0.4), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
+            pose_range = {"x": (0.3, 0.3), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
             # pose_range = {"x": (-0.15, 0.15), "y": (1.0, 1.25), "z": (0.01, 0.01)},
         )
         self._cube_1.write_root_link_pose_to_sim(default_cube_state_1[:, :7], env_ids=env_ids)
@@ -1602,8 +1599,8 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         default_cube_state_2[:, :3] += self.scene.env_origins[env_ids]
         default_cube_state_2[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            pose_range = {"x": (0.96, 1.11), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
-            # pose_range = {"x": (-0.15, 0.15), "y": (-1.25, -1.0), "z": (0.01, 0.01)},
+            # pose_range = {"x": (0.94, 1.09), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
+            pose_range = {"x": (0.94, 0.94), "y": (-0.0, 0.0), "z": (0.01, 0.01)},
         )
         self._cube_2.write_root_link_pose_to_sim(default_cube_state_2[:, :7], env_ids=env_ids)
 
@@ -1634,7 +1631,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
 
         with open(self.csv_path, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow([self.episode_idx, times.numel()])
+            writer.writerow([self.episode_idx, times.numel(), torch.clamp(torch.exp(-0.002 * self.single_skill_global_1), min=0.05), torch.clamp(torch.exp(-0.002 * self.single_skill_global_2), min=0.05)])
 
         self.episode_idx += 1
 
@@ -1672,10 +1669,10 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         success_single_envs_2 = (self.single_runlen_max_2 > 4)
 
         # if self.reward_1.mean().item() >= 100 and self.reward_2.mean().item() >= 100:
-        # if self.reward_1.mean().item() + self.reward_2.mean().item() >= 40:
-        #     self.reward_delay = True
+        if self.reward_1.mean().item() + self.reward_2.mean().item() >= 40:
+            self.reward_delay = True
     
-        # if self.reward_delay:     
+        if self.reward_delay:     
             # threshold = (self.num_envs + 1) // 4
             # # threshold = self.num_envs * 0.3
             # if int(success_single_envs_1.sum().item()) >= threshold:
@@ -1687,11 +1684,11 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
             # decay_by_skill_2 = torch.clamp(torch.exp(-0.002 * self.single_skill_global_2), min=0.05)
             # tqdm.tqdm.write(f"[success_single_num_1] {success_single_envs_1.sum().item()} [success_single_num_2] {success_single_envs_2.sum().item()}")
             # tqdm.tqdm.write(f"[reward_decay_1] {decay_by_skill_1} [reward_decay_2] {decay_by_skill_2}")
-        # if self.over_episode < 500:
-        #     self.dist_g_penalty_scale -= 0.002
-            # self.touch_penalty_scale -= 0.0005
-        # self.over_episode += 1
-        tqdm.tqdm.write(f"[penalty_decay] {self.dist_g_penalty_scale}")
+            # if self.over_episode < 500:
+            #     self.dist_g_penalty_scale -= 0.002
+            #     self.touch_penalty_scale -= 0.0005
+            # self.over_episode += 1
+            tqdm.tqdm.write(f"[penalty_decay] {self.dist_g_penalty_scale}")
 
 
             
@@ -1720,8 +1717,10 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         return positions
 
     def _get_observations(self) -> dict:
-        # rgb_1 = self._camera_1.data.output["rgb"] / 255.0
-        # rgb_2 = self._camera_2.data.output["rgb"] / 255.0
+        rgb_1 = self._camera_1.data.output["rgb"] / 255.0
+        rgb_2 = self._camera_2.data.output["rgb"] / 255.0
+        # rgb_1 = torch.rand(self.num_envs, 120, 120, 3, device=self.device)
+        # rgb_2 = torch.rand(self.num_envs, 120, 120, 3, device=self.device)
 
         self.joint_list_1.append(self.joint_pos_1)
         self.joint_list_2.append(self.joint_pos_2)
@@ -1750,7 +1749,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
                 # "joint": self.joint_list_1.buffer,
                 "joint": joint_list_1,
                 # "joint": self.joint_pos_1,
-                # "rgb": rgb_1,
+                "rgb": rgb_1,
                 "object": self.object_list_1.buffer,
                 # "object": self.object_b_1,
                 "goal": self.goal_list_1.buffer,
@@ -1772,7 +1771,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
                 # "joint": self.joint_list_2.buffer,
                 "joint": joint_list_2,
                 # "joint": self.joint_pos_,
-                # "rgb": rgb_1,
+                "rgb": rgb_2,
                 "object": self.object_list_2.buffer,
                 # "object": self.object_b_1,
                 "goal": self.goal_list_2.buffer,
@@ -1872,6 +1871,9 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         goal_pos_2 = self._goal_frame_2.data.target_pos_w[env_ids, 0, :]
         goal_rot_2 = self._goal_frame_2.data.target_quat_w[env_ids, 0, :]
 
+        goal_pos_1[env_ids, 2] -= 0.008
+        goal_pos_2[env_ids, 2] -= 0.008
+
         # goal_pos_e_1, goal_rot_e_1 = math_utils.subtract_frame_transforms(
         #     self.ee_pos_1, self.ee_rot_1, goal_pos_1, goal_rot_1
         # )
@@ -1925,8 +1927,8 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         ee_pos_2,
         lee_pos_2,
         ree_pos_2,
-        joint_1_pos_1,
-        joint_1_pos_2,    
+        joint_pos_1,
+        joint_pos_2,    
         cube_pos_1,
         cube_pos_2,
         camera_to_object_pos_1,
@@ -1969,16 +1971,16 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         # dis_reward_2 = torch.exp(-10*dis_2)
 
         d_g_1 = torch.norm(cube_pos_1-goal_pos_1, dim=-1)
-        goal_pos_1[:, 2] -=0.028
-        d_g_1_ = torch.norm(cube_pos_1-goal_pos_1, dim=-1)
+        # goal_pos_1[:, 2] -=0.028
+        # d_g_1_ = torch.norm(cube_pos_1-goal_pos_1, dim=-1)
         # dis_g_reward_1 = torch.exp(-5*d_g_1) + torch.exp(-30*d_g_1)
-        dis_g_penalty_1 = torch.tanh(10*d_g_1_)
+        dis_g_penalty_1 = torch.tanh(10*d_g_1)
 
         d_g_2 = torch.norm(cube_pos_2-goal_pos_2, dim=-1)
-        goal_pos_2[:, 2] -=0.028
-        d_g_2_ = torch.norm(cube_pos_2-goal_pos_2, dim=-1)
+        # goal_pos_2[:, 2] -=0.028
+        # d_g_2_ = torch.norm(cube_pos_2-goal_pos_2, dim=-1)
         # dis_g_reward_2 = torch.exp(-5*d_g_2) + torch.exp(-30*d_g_2)
-        dis_g_penalty_2 = torch.tanh(10*d_g_2_)
+        dis_g_penalty_2 = torch.tanh(10*d_g_2)
 
         contact_gripper_object_reward_1 = torch.norm(contact_gripper_object_1, dim=-1).squeeze() > 0.1
         catch_object_1 = contact_gripper_object_reward_1.any(dim=-1)
@@ -2163,9 +2165,9 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         task_2_2 = (task_id_2 == 2)
 
         actions_penalty_1 = self.action_rate_l2_ratio(self.curr_actions_1, self.prev_actions_1)
-        # joint_1_penalty_1 = torch.abs(joint_1_pos_1 - self.default_joint_1_pos_1).squeeze()
         actions_penalty_2 = self.action_rate_l2_ratio(self.curr_actions_2, self.prev_actions_2)
-        # joint_1_penalty_2 = torch.abs(joint_1_pos_2 - self.default_joint_1_pos_2).squeeze()
+        joint_penalty_1 = torch.norm(joint_pos_1 - self._robot_1.data.default_joint_pos[:, self.joint_pos_ids_1], dim=-1).squeeze()
+        joint_penalty_2 = torch.norm(joint_pos_2 - self._robot_2.data.default_joint_pos[:, self.joint_pos_ids_2], dim=-1).squeeze()
         joint_1_penalty_1 = torch.abs(torch.atan2(camera_to_object_pos_1[:, 1], camera_to_object_pos_1[:, 0]))
         joint_1_penalty_2 = torch.abs(torch.atan2(camera_to_object_pos_2[:, 1], camera_to_object_pos_2[:, 0]))
 
@@ -2198,14 +2200,22 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         )
         reward_1[task_0_1] = 0
         reward_1[task_1_1] = 0
-        
-        reward_1[task_2_1 & on_goal_1] += (
-            touch_penalty_scale * catch_object_1[task_2_1 & on_goal_1]
-            # touch_penalty_scale * catch_object_1 * task_2_1 * on_goal_1
-        )
+
+        gripper_open_penalty_1 = ((self.curr_actions_1[:, len(self.arm_ids_1)] >= 0) * (cube_pos_1[:, 2] >= 0.068)).float()
+        gripper_open_penalty_2 = ((self.curr_actions_2[:, len(self.arm_ids_2)] >= 0) * (cube_pos_2[:, 2] >= 0.068)).float()
+
+        if self.num_envs != 1:
+            reward_1[task_2_1 & on_goal_1] += (
+                touch_penalty_scale * catch_object_1[task_2_1 & on_goal_1]
+                # touch_penalty_scale * catch_object_1 * task_2_1 * on_goal_1
+                # + touch_penalty_scale * joint_penalty_1[task_2_1 & on_goal_1]
+            )
+
         reward_1[task_2_1 & ~on_goal_1] += (
-            dist_g_penalty_scale
-            # dist_g_penalty_scale * dis_g_penalty_1[task_2_1 & ~on_goal_1]
+            # dist_g_penalty_scale * torch.ones(self.num_envs, device=self.device)[task_2_1 & ~on_goal_1]
+            dist_g_penalty_scale * dis_g_penalty_1[task_2_1 & ~on_goal_1]
+            + dist_g_penalty_scale * gripper_open_penalty_1[task_2_1 & ~on_goal_1]
+            # + 0.1 * dist_g_penalty_scale * (contact_object_goal_1.select(dim=-1, index=2).squeeze() > 0.4)[task_2_1 & ~on_goal_1]        
         )
         reward_1[task_2_1] += (
             # + goal_reward_scale * goal_reward_1[task_2_1]
@@ -2221,18 +2231,25 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         reward_2[task_0_2] = 0
         reward_2[task_1_2] = 0
 
-        reward_2[task_2_2 & on_goal_2] += (
-            touch_penalty_scale * catch_object_2[task_2_2 & on_goal_2]
-            # touch_penalty_scale * catch_object_2 * task_2_2 * on_goal_2
-        )
+        if self.num_envs != 1:
+            reward_2[task_2_2 & on_goal_2] += (
+                touch_penalty_scale * catch_object_2[task_2_2 & on_goal_2]
+                # touch_penalty_scale * catch_object_2 * task_2_2 * on_goal_2            
+                # + touch_penalty_scale * joint_penalty_2[task_2_2 & on_goal_2]
+            )
+            
         reward_2[task_2_2 & ~on_goal_2] += (
-            dist_g_penalty_scale
-            # dist_g_penalty_scale * dis_g_penalty_2[task_2_2 & ~on_goal_2]
+            # dist_g_penalty_scale * torch.ones(self.num_envs, device=self.device)[task_2_2 & ~on_goal_2]
+            dist_g_penalty_scale * dis_g_penalty_2[task_2_2 & ~on_goal_2]
+            + dist_g_penalty_scale * gripper_open_penalty_2[task_2_2 & ~on_goal_2]
+            # + 0.1 * dist_g_penalty_scale * (contact_object_goal_2.select(dim=-1, index=2).squeeze() > 0.4)[task_2_2 & ~on_goal_2]
         )
         reward_2[task_2_2] += (
             # + goal_reward_scale * goal_reward_2[task_2_2]
             + sync_reward_scale * sync_reward[task_2_2]
         )
+        
+        # print(joint_penalty_1, joint_penalty_2)
 
         self.task_id_1[success_lift_mask_1 & task_0_1] = 1
         self.task_id_1[success_reach_mask_1] = 2

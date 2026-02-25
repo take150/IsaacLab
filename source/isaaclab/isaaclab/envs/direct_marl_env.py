@@ -225,6 +225,11 @@ class DirectMARLEnv(gym.Env):
                 for agent, noise_model in self.cfg.observation_noise_model_joint4.items()
                 if noise_model is not None
             }
+            self._observation_noise_model_gripper: dict[AgentID, NoiseModel] = {
+                agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
+                for agent, noise_model in self.cfg.observation_noise_model_gripper.items()
+                if noise_model is not None
+            }
             self._observation_noise_model_rgb: dict[AgentID, NoiseModel] = {
                 agent: noise_model.class_type(noise_model, num_envs=self.num_envs, device=self.device)
                 for agent, noise_model in self.cfg.observation_noise_model_rgb.items()
@@ -408,7 +413,9 @@ class DirectMARLEnv(gym.Env):
             self.robot_arm_targets_2[:, 1] = self._action_noise_model_joint2["robot_2"].apply(self.robot_arm_targets_2[:, 1])
             self.robot_arm_targets_2[:, 2] = self._action_noise_model_joint3["robot_2"].apply(self.robot_arm_targets_2[:, 2])
             self.robot_arm_targets_2[:, 3] = self._action_noise_model_joint4["robot_2"].apply(self.robot_arm_targets_2[:, 3])
-            
+            self.robot_wheel_targets_1[:] = self._action_noise_model_wheel["robot_1"].apply(self.robot_wheel_targets_1[:, :])
+            self.robot_wheel_targets_2[:] = self._action_noise_model_wheel["robot_2"].apply(self.robot_wheel_targets_2[:, :])
+        
         # check if we need to do rendering within the physics loop
         # note: checked here once to avoid multiple checks within the loop
         is_rendering = self.sim.has_gui() or self.sim.has_rtx_sensors()
@@ -459,9 +466,10 @@ class DirectMARLEnv(gym.Env):
         if self.cfg.observation_noise_model:
             for agent, obs in self.obs_dict.items():
                 self.obs_dict[agent]["joint"][:, 0] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 0])
-                self.obs_dict[agent]["joint"][:, 1] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 1])
-                self.obs_dict[agent]["joint"][:, 2] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 2])
-                self.obs_dict[agent]["joint"][:, 3] = self._observation_noise_model_joint1[agent].apply(obs["joint"][:, 3])
+                self.obs_dict[agent]["joint"][:, 1] = self._observation_noise_model_joint2[agent].apply(obs["joint"][:, 1])
+                self.obs_dict[agent]["joint"][:, 2] = self._observation_noise_model_joint3[agent].apply(obs["joint"][:, 2])
+                self.obs_dict[agent]["joint"][:, 3] = self._observation_noise_model_joint4[agent].apply(obs["joint"][:, 3])
+                self.obs_dict[agent]["joint"][:, -2:] = self._observation_noise_model_gripper[agent].apply(obs["joint"][:, -2:])
                 # self.obs_dict[agent]["rgb"] = self._observation_noise_model_rgb[agent].apply(obs["rgb"])
 
         # return observations, rewards, resets and extras
@@ -714,6 +722,7 @@ class DirectMARLEnv(gym.Env):
                 self._observation_noise_model_joint2[agent].reset(env_ids)
                 self._observation_noise_model_joint3[agent].reset(env_ids)
                 self._observation_noise_model_joint4[agent].reset(env_ids)
+                self._observation_noise_model_gripper[agent].reset(env_ids)
                 self._observation_noise_model_rgb[agent].reset(env_ids)
 
 

@@ -52,6 +52,124 @@ class EventCfg:
 
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
 
+    # randomize_joints_gain_1_1 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_1", joint_names=["joint1"]),
+    #         "stiffness_distribution_params": (180.0, 220.0),
+    #         "damping_distribution_params": (18.0, 22.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_2_1 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_1", joint_names=["joint2"]),
+    #         "stiffness_distribution_params": (270.0, 330.0),
+    #         "damping_distribution_params": (27.0, 33.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_3_1 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_1", joint_names=["joint3"]),
+    #         "stiffness_distribution_params": (270.0, 330.0),
+    #         "damping_distribution_params": (27.0, 33.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_4_1 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_1", joint_names=["joint4"]),
+    #         "stiffness_distribution_params": (360.0, 440.0),
+    #         "damping_distribution_params": (36.0, 44.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_1_2= EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_2", joint_names=["joint1"]),
+    #         "stiffness_distribution_params": (180.0, 220.0),
+    #         "damping_distribution_params": (18.0, 22.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_2_2 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_2", joint_names=["joint2"]),
+    #         "stiffness_distribution_params": (270.0, 330.0),
+    #         "damping_distribution_params": (27.0, 33.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_3_2 = EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_2", joint_names=["joint3"]),
+    #         "stiffness_distribution_params": (270.0, 330.0),
+    #         "damping_distribution_params": (27.0, 33.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    # randomize_joints_gain_4_2= EventTerm(
+    #     func=mdp.randomize_actuator_gains,
+    #     mode="reset",
+    #     params={
+    #         "asset_cfg": SceneEntityCfg("robot_2", joint_names=["joint4"]),
+    #         "stiffness_distribution_params": (360.0, 440.0),
+    #         "damping_distribution_params": (36.0, 44.0),
+    #         "operation": "abs",
+    #         "distribution": "uniform",
+    #     },
+    # )
+
+    randomize_gripper_velocity_limit_1 = EventTerm(
+        func=mdp.randomize_actuator_velocity_limit,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot_1", joint_names=["gripper_left_joint", "gripper_right_joint"]),
+            "distribution_params": (0.0075, 0.01),
+            "operation": "abs",
+            "distribution": "uniform",
+        },
+    )
+
+    randomize_gripper_velocity_limit_2 = EventTerm(
+        func=mdp.randomize_actuator_velocity_limit,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot_2", joint_names=["gripper_left_joint", "gripper_right_joint"]),
+            "distribution_params": (0.0075, 0.01),
+            "operation": "abs",
+            "distribution": "uniform",
+        },
+    )
+
     reset_leftcaster_friction_1 = EventTerm(
         func=mdp.randomize_rigid_body_material,
         mode="reset",
@@ -200,8 +318,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("cube_1", body_names="object_1"),
-          "static_friction_range": (0.7, 0.9),
-          "dynamic_friction_range": (0.6, 0.8),
+          "static_friction_range": (0.4, 0.6),
+          "dynamic_friction_range": (0.3, 0.5),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -212,8 +330,8 @@ class EventCfg:
         mode="reset",
         params={
           "asset_cfg": SceneEntityCfg("cube_2", body_names="object_2"),
-          "static_friction_range": (0.7, 0.9),
-          "dynamic_friction_range": (0.6, 0.8),
+          "static_friction_range": (0.4, 0.6),
+          "dynamic_friction_range": (0.3, 0.5),
           "restitution_range": (0.5, 0.5),
           "num_buckets": 1,
       },
@@ -344,13 +462,13 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
     )
 
     # scene
-    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=256, env_spacing=100, replicate_physics=False)
+    scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=512, env_spacing=100, replicate_physics=False)
 
     # robot
     robot_1 = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot_1",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_00_.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_test__.usd"),
             activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
                 disable_gravity=False,
@@ -380,22 +498,28 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 joint_names_expr=["joint[1-4]"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.2,
-                stiffness=80.0,
-                damping=4.0,
+                # stiffness={"joint1": 100, "joint2": 60, "joint3": 60, "joint4": 80},
+                # damping={"joint1": 10, "joint2": 6, "joint3": 6, "joint4": 8},
+                stiffness=200,
+                damping=10,
+                # friction=0.2,
+                # armature=0.0075
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
                 effort_limit_sim=4.1,
-                velocity_limit_sim=0.02,
-                stiffness=3000.0,
-                damping=150.0,
+                velocity_limit_sim=0.0075,
+                stiffness=2000.0,
+                damping=100.0,
             ),
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.8,
                 stiffness=0.0,
-                damping=6.0,
+                damping=10.0,
+                friction=0.2,
+                armature=0.0075
             ),
         },
     )
@@ -427,7 +551,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
     robot_2 = ArticulationCfg(
         prim_path="/World/envs/env_.*/Robot_2",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_00_.usd"),
+            usd_path=os.path.join(ASSET_ROOT, "isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation_nolidar_collision_test__.usd"),
             # usd_path=f"{ASSET_ROOT}/isaaclab_assets/data/Robots/Turtlebot3_manipulation/turtlebot3_manipulation.usd",
             activate_contact_sensors=True,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -458,22 +582,28 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 joint_names_expr=["joint[1-4]"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.2,
-                stiffness=80.0,
-                damping=4.0,
+                # stiffness={"joint1": 100, "joint2": 60, "joint3": 60, "joint4": 80},
+                # damping={"joint1": 10, "joint2": 6, "joint3": 6, "joint4": 8},
+                stiffness=200,
+                damping=10,
+                # friction=0.2,
+                # armature=0.0075
             ),
             "turtlebot3_gripper": ImplicitActuatorCfg(
                 joint_names_expr=["gripper_.*"],
                 effort_limit_sim=4.1,
-                velocity_limit_sim=0.02,
-                stiffness=3000.0,
-                damping=150.0,
+                velocity_limit_sim=0.0075,
+                stiffness=2000.0,
+                damping=100.0,
             ),
             "turtlebot3_wheel": ImplicitActuatorCfg(
                 joint_names_expr=["wheel_left_joint", "wheel_right_joint"],
                 effort_limit_sim=4.1,
                 velocity_limit_sim=0.8,
                 stiffness=0.0,
-                damping=6.0,
+                damping=10.0,
+                friction=0.2,
+                armature=0.0075
             ),
         },
     )
@@ -511,15 +641,15 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 # ),
                 sim_utils.CuboidCfg(
-                    size=(0.038, 0.038, 0.038),
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-                ),
-                sim_utils.CuboidCfg(
-                    size=(0.04, 0.04, 0.04),
+                    size=(0.041, 0.041, 0.041),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
                 sim_utils.CuboidCfg(
                     size=(0.042, 0.042, 0.042),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(0.043, 0.043, 0.043),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
                 # sim_utils.CuboidCfg(
@@ -537,7 +667,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                         max_depenetration_velocity=5.0,
                         disable_gravity=False,
                     ),
-            mass_props=sim_utils.MassPropertiesCfg(mass=0.06),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.11),
             collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0), rot=(1.0, 0.0, 0.0, 0.0)),
@@ -548,8 +678,8 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         update_period=0.0,
         history_length=0,
         filter_prim_paths_expr=[
-            "/World/envs/env_.*/Robot_1/gripper_left_link",
-            "/World/envs/env_.*/Robot_1/gripper_right_link",
+            "/World/envs/env_.*/Robot_1/gripper_left_tip_link",
+            "/World/envs/env_.*/Robot_1/gripper_right_tip_link",
             ],
     )
 
@@ -562,15 +692,15 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 #     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 # ),
                 sim_utils.CuboidCfg(
+                    size=(0.043, 0.043, 0.043),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
+                    size=(0.041, 0.041, 0.041),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
                     size=(0.042, 0.042, 0.042),
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-                ),
-                sim_utils.CuboidCfg(
-                    size=(0.038, 0.038, 0.038),
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-                ),
-                sim_utils.CuboidCfg(
-                    size=(0.04, 0.04, 0.04),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
                 # sim_utils.CuboidCfg(
@@ -588,7 +718,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                         max_depenetration_velocity=5.0,
                         disable_gravity=False,
                     ),
-            mass_props=sim_utils.MassPropertiesCfg(mass=0.06),
+            mass_props=sim_utils.MassPropertiesCfg(mass=0.11),
             collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
         init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0), rot=(1.0, 0.0, 0.0, 0.0)),
@@ -599,8 +729,8 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         update_period=0.0,
         history_length=0,
         filter_prim_paths_expr=[
-            "/World/envs/env_.*/Robot_2/gripper_left_link",
-            "/World/envs/env_.*/Robot_2/gripper_right_link",
+            "/World/envs/env_.*/Robot_2/gripper_left_tip_link",
+            "/World/envs/env_.*/Robot_2/gripper_right_tip_link",
             ],
     )
 
@@ -609,7 +739,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         spawn=sim_utils.MultiAssetSpawnerCfg(
             assets_cfg=[
                 sim_utils.CuboidCfg(
-                    size=(0.15, 0.1, 0.015),
+                    size=(0.2, 0.1, 0.017),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
                 # sim_utils.CuboidCfg(
@@ -640,7 +770,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
             # mass_props=sim_utils.MassPropertiesCfg(mass=0.8),
             collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0075), rot=(1.0, 0.0, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0085), rot=(1.0, 0.0, 0.0, 0.0)),
     )
 
     goal: RigidObjectCfg = RigidObjectCfg(
@@ -648,7 +778,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         spawn=sim_utils.MultiAssetSpawnerCfg(
             assets_cfg=[
                 sim_utils.CuboidCfg(
-                    size=(0.1, 0.3, 0.015),
+                    size=(0.1, 0.3, 0.017),
                     # size=(0.5, 0.35, 0.03),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
@@ -668,7 +798,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
             # mass_props=sim_utils.MassPropertiesCfg(mass=0.8),
             collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0225), rot=(1.0, 0.0, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.0255), rot=(1.0, 0.0, 0.0, 0.0)),
         # init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.015), rot=(1.0, 0.0, 0.0, 0.0)),
     )
 
@@ -708,6 +838,10 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         spawn=sim_utils.MultiAssetSpawnerCfg(
             assets_cfg=[
                 sim_utils.CuboidCfg(
+                    size=(2.0, 2.0, 0.01),
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                ),
+                sim_utils.CuboidCfg(
                     size=(3.5, 3.5, 0.01),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
@@ -725,10 +859,6 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 ),
                 sim_utils.CuboidCfg(
                     size=(10.0, 10.0, 0.01),
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-                ),
-                sim_utils.CuboidCfg(
-                    size=(15.0, 15.0, 0.01),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
                 ),
             ],
@@ -813,7 +943,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/Robot_1/gripper_left_link",
                 name="left_end_effector",
                 offset=OffsetCfg(
-                    pos=[0.045, 0.0, 0.0],
+                    pos=[0.045, -0.002, 0.0],
                 ),
             ),
         ],
@@ -827,7 +957,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/Robot_1/gripper_right_link",
                 name="right_end_effector",
                 offset=OffsetCfg(
-                    pos=[0.045, 0.0, 0.0],
+                    pos=[0.045, 0.002, 0.0],
                 ),
             ),
         ],
@@ -856,7 +986,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/Robot_2/gripper_left_link",
                 name="left_end_effector",
                 offset=OffsetCfg(
-                    pos=[0.045, 0.0, 0.0],
+                    pos=[0.045, -0.002, 0.0],
                 ),
             ),
         ],
@@ -870,7 +1000,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/Robot_2/gripper_right_link",
                 name="right_end_effector",
                 offset=OffsetCfg(
-                    pos=[0.045, 0.0, 0.0],
+                    pos=[0.045, 0.002, 0.0],
                 ),
             ),
         ],
@@ -885,7 +1015,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="cube_1_set",
                 offset=OffsetCfg(
-                    pos=[0.0, -0.13, 0.0525],
+                    pos=[0.0, -0.12, 0.0525],
                 ),
             ),
         ],
@@ -900,7 +1030,7 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="cube_2_set",
                 offset=OffsetCfg(
-                    pos=[0.0, 0.13, 0.0525],
+                    pos=[0.0, 0.12, 0.0525],
                 ),
             ),
         ],
@@ -936,6 +1066,38 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         ],
     )
 
+    camera_frame_1 = FrameTransformerCfg(
+        prim_path="/World/envs/env_.*/Robot_1/base_footprint",
+        debug_vis=False,
+        visualizer_cfg=marker_cfg,
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="/World/envs/env_.*/Robot_1/base_footprint",
+                name="camera_up_1",
+                offset=OffsetCfg(
+                    pos=(0.076, 0.068, 0.041),
+                    rot=(0.99756405, 0.0, 0.06975647, 0.0)
+                ),
+            ),
+        ],
+    )
+
+    camera_frame_2 = FrameTransformerCfg(
+        prim_path="/World/envs/env_.*/Robot_2/base_footprint",
+        debug_vis=False,
+        visualizer_cfg=marker_cfg,
+        target_frames=[
+            FrameTransformerCfg.FrameCfg(
+                prim_path="/World/envs/env_.*/Robot_2/base_footprint",
+                name="camera_up_2",
+                offset=OffsetCfg(
+                    pos=(0.076, 0.068, 0.041),
+                    rot=(0.99756405, 0.0, 0.06975647, 0.0)
+                ),
+            ),
+        ],
+    )
+
     events: EventCfg = EventCfg()
 
     possible_agents = ["robot_1", "robot_2"]
@@ -949,23 +1111,27 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
     # observation noise
     observation_noise_model = True
     observation_noise_model_joint1: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0025, operation="add"))
         for agent in possible_agents
     }
     observation_noise_model_joint2: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0025, operation="add"))
         for agent in possible_agents
     }
     observation_noise_model_joint3: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0025, operation="add"))
         for agent in possible_agents
     }
     observation_noise_model_joint4: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0025, operation="add"))
+        for agent in possible_agents
+    }
+    observation_noise_model_gripper: dict[AgentID, noise_utils.NoiseModelCfg] = {
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0025, operation="add"))
         for agent in possible_agents
     }
     observation_noise_model_rgb: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.0025, operation="add"))
         for agent in possible_agents
     }    
 
@@ -976,22 +1142,22 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
         for agent in possible_agents
     }
     action_noise_model_joint2: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.025, std=0.0025, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
         for agent in possible_agents
     }
     action_noise_model_joint3: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.01, std=0.0025, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
         for agent in possible_agents
     }
     action_noise_model_joint4: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.005, std=0.0015, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.005, operation="add"))
         for agent in possible_agents
     }
     action_noise_model_wheel: dict[AgentID, noise_utils.NoiseModelCfg] = {
-        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.1, operation="add"))
+        agent: noise_utils.NoiseModelCfg(noise_cfg=noise_utils.GaussianNoiseCfg(mean=0.0, std=0.025, operation="add"))
         for agent in possible_agents
     }
-    
+
     action_scale = 1.0
     dof_velocity_scale = 0.1
 
@@ -1005,6 +1171,8 @@ class Turtlebot3MultiDistillationEnvCfg(DirectMARLEnvCfg):
     contact_ground_penalty_scale = 0.0
     contact_goal_penalty_scale = -0.15
     break_goal_penalty_scale = 0.0
+    joint_1_penalty_scale = -0.5
+
 
 class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
     # pre-physics step calls
@@ -1047,10 +1215,10 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         joint_1_ids, _ = self._robot_1.find_joints("joint1", preserve_order=False)
         joint_2_ids, _ = self._robot_2.find_joints("joint1", preserve_order=False)
 
-        self.robot_dof_lower_limits_1[joint_1_ids] = -0.5235987
-        self.robot_dof_lower_limits_2[joint_2_ids] = -0.5235987
-        self.robot_dof_upper_limits_1[joint_1_ids] = 0.5235987
-        self.robot_dof_upper_limits_2[joint_2_ids] = 0.5235987
+        # self.robot_dof_lower_limits_1[joint_1_ids] = -0.5235987
+        # self.robot_dof_lower_limits_2[joint_2_ids] = -0.5235987
+        # self.robot_dof_upper_limits_1[joint_1_ids] = 0.5235987
+        # self.robot_dof_upper_limits_2[joint_2_ids] = 0.5235987
 
         self.robot_arm_targets_1 = torch.zeros((self.num_envs, len(self.arm_ids_1)), device=self.device)
         self.robot_gripper_targets_1 = torch.zeros((self.num_envs, len(self.gripper_ids_1)), device=self.device)
@@ -1123,6 +1291,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self._ee_frame_1 = FrameTransformer(self.cfg.ee_frame_1)
         self._lee_frame_1 = FrameTransformer(self.cfg.lee_frame_1)
         self._ree_frame_1 = FrameTransformer(self.cfg.ree_frame_1)
+        self._camera_frame_1 = FrameTransformer(self.cfg.camera_frame_1)
 
         self._robot_2 = Articulation(self.cfg.robot_2)
         self._camera_2 = TiledCamera(self.cfg.camera_2)
@@ -1134,6 +1303,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self._ee_frame_2 = FrameTransformer(self.cfg.ee_frame_2)
         self._lee_frame_2 = FrameTransformer(self.cfg.lee_frame_2)
         self._ree_frame_2 = FrameTransformer(self.cfg.ree_frame_2)
+        self._camera_frame_2 = FrameTransformer(self.cfg.camera_frame_2)
 
         self._cube_1 = RigidObject(self.cfg.cube_1)
         self._cube_2 = RigidObject(self.cfg.cube_2)
@@ -1160,6 +1330,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self.scene.sensors["ee_frame_1"] = self._ee_frame_1
         self.scene.sensors["lee_frame_1"] = self._lee_frame_1
         self.scene.sensors["ree_frame_1"] = self._ree_frame_1
+        self.scene.sensors["camera_frame_1"] = self._camera_frame_1
 
         self.scene.articulations["robot_2"] = self._robot_2
         self.scene.sensors["camera_2"] = self._camera_2
@@ -1171,6 +1342,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self.scene.sensors["ee_frame_2"] = self._ee_frame_2
         self.scene.sensors["lee_frame_2"] = self._lee_frame_2
         self.scene.sensors["ree_frame_2"] = self._ree_frame_2
+        self.scene.sensors["camera_frame_2"] = self._camera_frame_2
 
         self.scene.rigid_objects["cube_1"] = self._cube_1
         self.scene.rigid_objects["cube_2"] = self._cube_2
@@ -1183,7 +1355,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self.scene.sensors["set_frame_2"] = self._set_frame_2
         self.scene.sensors["goal_frame_1"] = self._goal_frame_1
         self.scene.sensors["goal_frame_2"] = self._goal_frame_2
-    
+
         self.cfg.terrain.num_envs = self.scene.cfg.num_envs
         self.cfg.terrain.env_spacing = self.scene.cfg.env_spacing
         self._terrain = self.cfg.terrain.class_type(self.cfg.terrain)
@@ -1281,6 +1453,8 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
             self.ree_pos_2,
             self.cube_pos_1,
             self.cube_pos_2,
+            self.camera_to_object_pos_1,
+            self.camera_to_object_pos_2,
             # self.goal_pos_1,
             # self.goal_pos_2,
             self.contact_base_1,
@@ -1302,6 +1476,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
             self.cfg.contact_ground_penalty_scale,
             self.cfg.contact_goal_penalty_scale,
             self.cfg.break_goal_penalty_scale,
+            self.cfg.joint_1_penalty_scale,
         )
 
     def _reset_idx(self, env_ids: torch.Tensor | None):
@@ -1313,7 +1488,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
             (len(env_ids), self._robot_1.num_joints),
             self.device,
         )
-        joint_pos_1 = torch.clamp(joint_pos_1, self.robot_dof_lower_limits_1, self.robot_dof_upper_limits_2)
+        joint_pos_1 = torch.clamp(joint_pos_1, self.robot_dof_lower_limits_1, self.robot_dof_upper_limits_1)
         # joint_pos_1 = torch.clamp(self._robot_1.data.default_joint_pos[env_ids], self.robot_dof_lower_limits, self.robot_dof_upper_limits)
         joint_vel_1 = torch.zeros_like(joint_pos_1)
         default_robot_state_1 = self._robot_1.data.default_root_state[env_ids].clone()
@@ -1423,8 +1598,8 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self.sync_award_step[env_ids] = -1
         self.sync_window_open[env_ids] = False
 
-        success_single_envs_1 = (self.single_runlen_max_1 >= 16)
-        success_single_envs_2 = (self.single_runlen_max_2 >= 16)
+        success_single_envs_1 = (self.single_runlen_max_1 > 4)
+        success_single_envs_2 = (self.single_runlen_max_2 > 4)
 
         if self.reward_1.mean().item() >= 220 and self.reward_2.mean().item() >= 220:
             tqdm.tqdm.write("threshold over")
@@ -1476,6 +1651,12 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
 
         joint_list_1 = 2 * (self.joint_list_1.buffer - self.robot_dof_lower_limits_1[self.joint_pos_ids_1]) / (self.robot_dof_upper_limits_1[self.joint_pos_ids_1] - self.robot_dof_lower_limits_1[self.joint_pos_ids_1]) - 1
         joint_list_2 = 2 * (self.joint_list_2.buffer - self.robot_dof_lower_limits_2[self.joint_pos_ids_2]) / (self.robot_dof_upper_limits_2[self.joint_pos_ids_2] - self.robot_dof_lower_limits_2[self.joint_pos_ids_2]) - 1
+
+        mean_1 = joint_list_1[:, :, -2:].mean(dim=-1, keepdim=True)
+        joint_list_1[:, :, -2:] = mean_1.expand(-1, -1, 2)
+
+        mean_2 = joint_list_2[:, :, -2:].mean(dim=-1, keepdim=True)
+        joint_list_2[:, :, -2:] = mean_2.expand(-1, -1, 2)
 
         obs = {
             "robot_1": {
@@ -1561,14 +1742,18 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         self.ee_rot_1 = self._ee_frame_1.data.target_quat_w[env_ids, 0, :]
         self.lee_pos_1 = self._lee_frame_1.data.target_pos_w[env_ids, 0, :]
         self.ree_pos_1 = self._ree_frame_1.data.target_pos_w[env_ids, 0, :]
-
+        self.camera_pos_1 = self._camera_frame_1.data.target_pos_w[env_ids, 0, :]
+        self.camera_rot_1 = self._camera_frame_1.data.target_quat_w[env_ids, 0, :]
+        
         self.base_pos_2 = self._robot_2.data.root_link_state_w[env_ids, :3]
         self.base_rot_2 = self._robot_2.data.root_link_state_w[env_ids, 3:7]
         self.ee_pos_2 = self._ee_frame_2.data.target_pos_w[env_ids, 0, :]
         self.ee_rot_2 = self._ee_frame_2.data.target_quat_w[env_ids, 0, :]
         self.lee_pos_2 = self._lee_frame_2.data.target_pos_w[env_ids, 0, :]
         self.ree_pos_2 = self._ree_frame_2.data.target_pos_w[env_ids, 0, :]
-
+        self.camera_pos_2 = self._camera_frame_2.data.target_pos_w[env_ids, 0, :]
+        self.camera_rot_2 = self._camera_frame_2.data.target_quat_w[env_ids, 0, :]
+        
         self.cube_pos_1 = self._cube_1.data.root_link_state_w[env_ids, :3]
         self.cube_rot_1 = self._cube_1.data.root_link_state_w[env_ids, 3:7]
 
@@ -1600,7 +1785,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
 
         goal_pos = self._goal.data.root_link_state_w[env_ids, :3]
         goal_rot = self._goal.data.root_link_state_w[env_ids, 3:7]
-        goal_pos[env_ids, 2] += 0.0075
+        goal_pos[env_ids, 2] -= 0.0085
 
         goal_pos_b_1, goal_rot_b_1 = math_utils.subtract_frame_transforms(
             self.base_pos_1, self.base_rot_1, goal_pos, goal_rot
@@ -1634,6 +1819,14 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         # self.contact_leftgripper_ground_2 = self._contact_leftgripper_ground_2.data.force_matrix_w[env_ids, :]
         # self.contact_rightgripper_ground_2 = self._contact_rightgripper_ground_2.data.force_matrix_w[env_ids, :]
 
+        self.camera_to_object_pos_1, _ = math_utils.subtract_frame_transforms(
+            self.camera_pos_1, self.camera_rot_1, self.cube_pos_1, self.cube_rot_1
+        )
+
+        self.camera_to_object_pos_2, _ = math_utils.subtract_frame_transforms(
+            self.camera_pos_2, self.camera_rot_2, self.cube_pos_2, self.cube_rot_2
+        )
+
     def _compute_rewards(
         self,
         joint_acc_1,
@@ -1646,6 +1839,8 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         ree_pos_2,
         cube_pos_1,
         cube_pos_2,
+        camera_to_object_pos_1,
+        camera_to_object_pos_2,
         # goal_pos_1,
         # goal_pos_2,
         contact_base_1,
@@ -1667,6 +1862,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         contact_ground_penalty_scale,
         contact_goal_penalty_scale,
         break_goal_penalty_scale,
+        joint_1_penalty_scale,
     ):
         d_c_1 = torch.norm(cube_pos_1-ee_pos_1, dim=-1)
         d_l_1 = torch.norm(cube_pos_1-lee_pos_1, dim=-1)
@@ -1684,17 +1880,17 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
 
         contact_gripper_object_reward_1 = torch.norm(contact_gripper_object_1, dim=-1).squeeze() > 1.0
         catch_object_1 = contact_gripper_object_reward_1.any(dim=-1)
-        lift_reward_1 = torch.where(cube_pos_1[:, 2] > 0.06, 1.0, 0.0) * catch_object_1 * torch.where(d_c_1 < 0.025, 1.0, 0.0)
+        lift_reward_1 = torch.where(cube_pos_1[:, 2] > 0.065, 1.0, 0.0) * torch.where(cube_pos_1[:, 2] < 0.085, 1.0, 0.0) * catch_object_1 * torch.where(d_c_1 < 0.025, 1.0, 0.0)
         contact_gripper_object_reward_2 = torch.norm(contact_gripper_object_2, dim=-1).squeeze() > 1.0
         catch_object_2 = contact_gripper_object_reward_2.any(dim=-1)
-        lift_reward_2 = torch.where(cube_pos_2[:, 2] > 0.06, 1.0, 0.0) * catch_object_2 * torch.where(d_c_2 < 0.025, 1.0, 0.0)
+        lift_reward_2 = torch.where(cube_pos_2[:, 2] > 0.065, 1.0, 0.0) * torch.where(cube_pos_2[:, 2] < 0.085, 1.0, 0.0) * catch_object_2 * torch.where(d_c_2 < 0.025, 1.0, 0.0)
 
         # contact_gripper_object_sync_1 = torch.norm(contact_gripper_object_1, dim=-1).squeeze() > 0.5
         # catch_object_sync_1 = contact_gripper_object_sync_1.any(dim=-1)
-        lift_sync_1 = torch.where(cube_pos_1[:, 2] > 0.06, 1.0, 0.0) * catch_object_1 * torch.where(d_c_1 < 0.03, 1.0, 0.0)
+        lift_sync_1 = torch.where(cube_pos_1[:, 2] > 0.065, 1.0, 0.0) * catch_object_1 * torch.where(d_c_1 < 0.03, 1.0, 0.0)
         # contact_gripper_object_sync_2 = torch.norm(contact_gripper_object_2, dim=-1).squeeze() > 0.5
         # catch_object_sync_2 = contact_gripper_object_sync_2.any(dim=-1)
-        lift_sync_2 = torch.where(cube_pos_2[:, 2] > 0.06, 1.0, 0.0) * catch_object_2 * torch.where(d_c_2 < 0.03, 1.0, 0.0)
+        lift_sync_2 = torch.where(cube_pos_2[:, 2] > 0.065, 1.0, 0.0) * catch_object_2 * torch.where(d_c_2 < 0.03, 1.0, 0.0)
  
         # print(1, cube_pos_1[:, 2])
         # print(2, cube_pos_2[:, 2])
@@ -1771,6 +1967,8 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
         actions_penalty_2 = self.action_rate_l2_ratio(self.curr_actions_2, self.prev_actions_2)
         # actions_penalty_1 = torch.mean(torch.abs(joint_acc_1), dim=-1)
         # actions_penalty_2 = torch.mean(torch.abs(joint_acc_2), dim=-1)
+        joint_1_penalty_1 = torch.abs(torch.atan2(camera_to_object_pos_1[:, 1], camera_to_object_pos_1[:, 0]))
+        joint_1_penalty_2 = torch.abs(torch.atan2(camera_to_object_pos_2[:, 1], camera_to_object_pos_2[:, 0]))
 
         contact_base_penalty_1 = torch.norm(contact_base_1, dim=-1).squeeze() > 1.0
         self_collision_penalty_1 = contact_base_penalty_1.any(dim=-1)
@@ -1802,6 +2000,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
             + self_collision_penalty_scale * self_collision_penalty_1
             + contact_goal_penalty_scale * contact_goal_penalty_1
             + action_penalty_scale * actions_penalty_1
+            + joint_1_penalty_scale * joint_1_penalty_1
         )
 
         reward_2 = (
@@ -1811,6 +2010,7 @@ class Turtlebot3MultiDistillationEnv(DirectMARLEnv):
             + self_collision_penalty_scale * self_collision_penalty_2
             + contact_goal_penalty_scale * contact_goal_penalty_2
             + action_penalty_scale * actions_penalty_2
+            + joint_1_penalty_scale * joint_1_penalty_2
         )
 
         self.reward_1 += reward_1

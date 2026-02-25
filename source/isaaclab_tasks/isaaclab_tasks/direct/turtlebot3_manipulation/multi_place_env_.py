@@ -444,7 +444,7 @@ class EventCfg:
 @configclass
 class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     # env
-    episode_length_s = 40.1  # 1500 timesteps
+    episode_length_s = 30.1  # 1500 timesteps
     decimation = 25
     seed = 0
 
@@ -780,7 +780,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
             assets_cfg=[
                 sim_utils.CuboidCfg(
                     # size=(0.1, 0.3, 0.015),
-                    size=(0.3, 0.5, 0.036),
+                    size=(0.3, 0.1, 0.036),
                     visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
                 ),
             ],
@@ -800,7 +800,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
             collision_props=sim_utils.CollisionPropertiesCfg(),
         ),
         # init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.045), rot=(1.0, 0.0, 0.0, 0.0)),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.017), rot=(1.0, 0.0, 0.0, 0.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 0.018), rot=(1.0, 0.0, 0.0, 0.0)),
     )
 
     contact_robot_goal_1: ContactSensorCfg = ContactSensorCfg(
@@ -1035,7 +1035,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="cube_1_set",
                 offset=OffsetCfg(
-                    pos=[-0.12, 0.0, 0.068],
+                    pos=[-0.12, 0.0, 0.048],
                 ),
             ),
         ],
@@ -1050,7 +1050,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
                 prim_path="/World/envs/env_.*/goal",
                 name="cube_2_set",
                 offset=OffsetCfg(
-                    pos=[0.12, 0.0, 0.068],
+                    pos=[0.12, 0.0, 0.048],
                     rot=[0.0, 0.0, 0.0, 1.0]
                 ),
             ),
@@ -1167,7 +1167,7 @@ class Turtlebot3MultiPlaceEnvCfg(DirectMARLEnvCfg):
     contact_ground_penalty_scale = 0.0
     contact_goal_penalty_scale = -0.15
     touch_penalty_scale = -0.25
-    dist_g_penalty_scale = -0.1
+    dist_g_penalty_scale = -1.0
     # touch_penalty_scale = -0.25
     # dist_g_penalty_scale = -1.0
 
@@ -1394,12 +1394,10 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
     def _pre_physics_step(self, actions: torch.Tensor):
         arm_actions_1 = actions["robot_1"][:, :len(self.arm_ids_1)].clone().clamp(-1.0, 1.0)
         gripper_action_1 = actions["robot_1"][:, len(self.arm_ids_1)].clone().clamp(-1.0, 1.0) 
-        gripper_action_1[self.task_id_1==1] = -1.0
         wheel_actions_1 = actions["robot_1"][:, len(self.arm_ids_1)+1:].clone().clamp(-1.0, 1.0)
 
         arm_actions_2 = actions["robot_2"][:, :len(self.arm_ids_2)].clone().clamp(-1.0, 1.0)
         gripper_action_2 = actions["robot_2"][:, len(self.arm_ids_2)].clone().clamp(-1.0, 1.0) 
-        gripper_action_2[self.task_id_2==1] = -1.0        
         wheel_actions_2 = actions["robot_2"][:, len(self.arm_ids_2)+1:].clone().clamp(-1.0, 1.0)
 
         arm_targets_1 = self._robot_1.data.joint_pos[:, self.arm_ids_1] + self.robot_dof_vel_limits_tensor_1[self.arm_ids_1] * self.dt * arm_actions_1
@@ -1486,8 +1484,8 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
             self.ee_pos_2,
             self.lee_pos_2,
             self.ree_pos_2,
-            self.joint_1_pos_1,
-            self.joint_1_pos_2,
+            self.joint_pos_1,
+            self.joint_pos_2,
             self.cube_pos_1,
             self.cube_pos_2,
             self.camera_to_object_pos_1,
@@ -1555,7 +1553,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         default_robot_state_2[:, :3] += self.scene.env_origins[env_ids]
         default_robot_state_2[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            pose_range = {"x": (1.36, 1.36), "y": (0.0, 0.0), "z": (0.0, 0.0)},
+            pose_range = {"x": (1.34, 1.34), "y": (0.0, 0.0), "z": (0.0, 0.0)},
             # pose_range = {"x": (0.0, 0.0), "y": (-5.0, -5.0), "z": (0.001, 0.001)},
         )
         self._robot_2.write_root_link_pose_to_sim(default_robot_state_2[:, :7], env_ids=env_ids)
@@ -1575,7 +1573,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         default_goal_state[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
             # pose_range = {"x": (1.5, 1.6), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
-            pose_range = {"x": (0.62, 0.82), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
+            pose_range = {"x": (0.62, 0.72), "y": (-0.05, 0.05), "z": (0.001, 0.001)},
         )
         # self._goal_base.write_root_link_pose_to_sim(default_goal_base_state[:, :7], env_ids=env_ids)
         self._goal.write_root_link_pose_to_sim(default_goal_state[:, :7], env_ids=env_ids)
@@ -1602,7 +1600,7 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         default_cube_state_2[:, :3] += self.scene.env_origins[env_ids]
         default_cube_state_2[:, :3] += self.reset_root_state_uniform(
             env_ids=env_ids,
-            pose_range = {"x": (0.96, 1.11), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
+            pose_range = {"x": (0.94, 1.09), "y": (-0.05, 0.05), "z": (0.01, 0.01)},
             # pose_range = {"x": (-0.15, 0.15), "y": (-1.25, -1.0), "z": (0.01, 0.01)},
         )
         self._cube_2.write_root_link_pose_to_sim(default_cube_state_2[:, :7], env_ids=env_ids)
@@ -1687,11 +1685,11 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
             # decay_by_skill_2 = torch.clamp(torch.exp(-0.002 * self.single_skill_global_2), min=0.05)
             # tqdm.tqdm.write(f"[success_single_num_1] {success_single_envs_1.sum().item()} [success_single_num_2] {success_single_envs_2.sum().item()}")
             # tqdm.tqdm.write(f"[reward_decay_1] {decay_by_skill_1} [reward_decay_2] {decay_by_skill_2}")
-        # if self.over_episode < 500:
-        #     self.dist_g_penalty_scale -= 0.002
-            # self.touch_penalty_scale -= 0.0005
-        # self.over_episode += 1
-        tqdm.tqdm.write(f"[penalty_decay] {self.dist_g_penalty_scale}")
+        # if times.numel() >= self.num_envs/2 and self.over_episode < 20:
+        #     self.dist_g_penalty_scale -= 0.05
+        #     self.touch_penalty_scale -= 0.0125
+        #     self.over_episode += 1
+        # tqdm.tqdm.write(f"[penalty_decay] {self.dist_g_penalty_scale}")
 
 
             
@@ -1925,8 +1923,8 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         ee_pos_2,
         lee_pos_2,
         ree_pos_2,
-        joint_1_pos_1,
-        joint_1_pos_2,    
+        joint_pos_1,
+        joint_pos_2,    
         cube_pos_1,
         cube_pos_2,
         camera_to_object_pos_1,
@@ -1969,16 +1967,16 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         # dis_reward_2 = torch.exp(-10*dis_2)
 
         d_g_1 = torch.norm(cube_pos_1-goal_pos_1, dim=-1)
-        goal_pos_1[:, 2] -=0.028
-        d_g_1_ = torch.norm(cube_pos_1-goal_pos_1, dim=-1)
+        # goal_pos_1[:, 2] -=0.028
+        # d_g_1_ = torch.norm(cube_pos_1-goal_pos_1, dim=-1)
         # dis_g_reward_1 = torch.exp(-5*d_g_1) + torch.exp(-30*d_g_1)
-        dis_g_penalty_1 = torch.tanh(10*d_g_1_)
+        dis_g_penalty_1 = torch.tanh(10*d_g_1)
 
         d_g_2 = torch.norm(cube_pos_2-goal_pos_2, dim=-1)
-        goal_pos_2[:, 2] -=0.028
-        d_g_2_ = torch.norm(cube_pos_2-goal_pos_2, dim=-1)
+        # goal_pos_2[:, 2] -=0.028
+        # d_g_2_ = torch.norm(cube_pos_2-goal_pos_2, dim=-1)
         # dis_g_reward_2 = torch.exp(-5*d_g_2) + torch.exp(-30*d_g_2)
-        dis_g_penalty_2 = torch.tanh(10*d_g_2_)
+        dis_g_penalty_2 = torch.tanh(10*d_g_2)
 
         contact_gripper_object_reward_1 = torch.norm(contact_gripper_object_1, dim=-1).squeeze() > 0.1
         catch_object_1 = contact_gripper_object_reward_1.any(dim=-1)
@@ -2163,9 +2161,9 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         task_2_2 = (task_id_2 == 2)
 
         actions_penalty_1 = self.action_rate_l2_ratio(self.curr_actions_1, self.prev_actions_1)
-        # joint_1_penalty_1 = torch.abs(joint_1_pos_1 - self.default_joint_1_pos_1).squeeze()
         actions_penalty_2 = self.action_rate_l2_ratio(self.curr_actions_2, self.prev_actions_2)
-        # joint_1_penalty_2 = torch.abs(joint_1_pos_2 - self.default_joint_1_pos_2).squeeze()
+        joint_penalty_1 = torch.norm(joint_pos_1 - self._robot_1.data.default_joint_pos[:, self.joint_pos_ids_1], dim=-1).squeeze()
+        joint_penalty_2 = torch.norm(joint_pos_2 - self._robot_2.data.default_joint_pos[:, self.joint_pos_ids_2], dim=-1).squeeze()
         joint_1_penalty_1 = torch.abs(torch.atan2(camera_to_object_pos_1[:, 1], camera_to_object_pos_1[:, 0]))
         joint_1_penalty_2 = torch.abs(torch.atan2(camera_to_object_pos_2[:, 1], camera_to_object_pos_2[:, 0]))
 
@@ -2198,14 +2196,22 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         )
         reward_1[task_0_1] = 0
         reward_1[task_1_1] = 0
-        
-        reward_1[task_2_1 & on_goal_1] += (
-            touch_penalty_scale * catch_object_1[task_2_1 & on_goal_1]
-            # touch_penalty_scale * catch_object_1 * task_2_1 * on_goal_1
-        )
+
+        gripper_open_penalty_1 = ((self.curr_actions_1[:, len(self.arm_ids_1)] >= 0) * (cube_pos_1[:, 2] >= 0.068)).float()
+        gripper_open_penalty_2 = ((self.curr_actions_2[:, len(self.arm_ids_2)] >= 0) * (cube_pos_2[:, 2] >= 0.068)).float()
+
+        if self.num_envs != 1:
+            reward_1[task_2_1 & on_goal_1] += (
+                touch_penalty_scale * catch_object_1[task_2_1 & on_goal_1]
+                # touch_penalty_scale * catch_object_1 * task_2_1 * on_goal_1
+                # + touch_penalty_scale * joint_penalty_1[task_2_1 & on_goal_1]
+            )
+
         reward_1[task_2_1 & ~on_goal_1] += (
-            dist_g_penalty_scale
-            # dist_g_penalty_scale * dis_g_penalty_1[task_2_1 & ~on_goal_1]
+            # dist_g_penalty_scale * torch.ones(self.num_envs, device=self.device)[task_2_1 & ~on_goal_1]
+            dist_g_penalty_scale * dis_g_penalty_1[task_2_1 & ~on_goal_1]
+            + dist_g_penalty_scale * gripper_open_penalty_1[task_2_1 & ~on_goal_1]
+            # + 0.1 * dist_g_penalty_scale * (contact_object_goal_1.select(dim=-1, index=2).squeeze() > 0.4)[task_2_1 & ~on_goal_1]        
         )
         reward_1[task_2_1] += (
             # + goal_reward_scale * goal_reward_1[task_2_1]
@@ -2221,18 +2227,25 @@ class Turtlebot3MultiPlaceEnv(DirectMARLEnv):
         reward_2[task_0_2] = 0
         reward_2[task_1_2] = 0
 
-        reward_2[task_2_2 & on_goal_2] += (
-            touch_penalty_scale * catch_object_2[task_2_2 & on_goal_2]
-            # touch_penalty_scale * catch_object_2 * task_2_2 * on_goal_2
-        )
+        if self.num_envs != 1:
+            reward_2[task_2_2 & on_goal_2] += (
+                touch_penalty_scale * catch_object_2[task_2_2 & on_goal_2]
+                # touch_penalty_scale * catch_object_2 * task_2_2 * on_goal_2            
+                # + touch_penalty_scale * joint_penalty_2[task_2_2 & on_goal_2]
+            )
+            
         reward_2[task_2_2 & ~on_goal_2] += (
-            dist_g_penalty_scale
-            # dist_g_penalty_scale * dis_g_penalty_2[task_2_2 & ~on_goal_2]
+            # dist_g_penalty_scale * torch.ones(self.num_envs, device=self.device)[task_2_2 & ~on_goal_2]
+            dist_g_penalty_scale * dis_g_penalty_2[task_2_2 & ~on_goal_2]
+            + dist_g_penalty_scale * gripper_open_penalty_2[task_2_2 & ~on_goal_2]
+            # + 0.1 * dist_g_penalty_scale * (contact_object_goal_2.select(dim=-1, index=2).squeeze() > 0.4)[task_2_2 & ~on_goal_2]
         )
         reward_2[task_2_2] += (
             # + goal_reward_scale * goal_reward_2[task_2_2]
             + sync_reward_scale * sync_reward[task_2_2]
         )
+        
+        # print(joint_penalty_1, joint_penalty_2)
 
         self.task_id_1[success_lift_mask_1 & task_0_1] = 1
         self.task_id_1[success_reach_mask_1] = 2
